@@ -7,8 +7,13 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
   :root{
-    --bg:#EAF0F4; --surface:#FFFFFF; --ink:#17233A; --muted:#5D6A7C; --faint:#9AA5B4;
-    --line:#D2DBE4; --soft:#F4F7FA; --seal:#B4312A; --ok:#1E7556; --warn:#A65F00;
+    /* 눈이 편한 바탕: 눈부심이 적은 연회색 바탕, 순검정 대신 부드러운 먹색 글자 */
+    --bg:#EEF2F1; --surface:#FDFEFE; --ink:#25313B; --muted:#65717C; --faint:#A2ACB4;
+    --line:#DCE3E1; --soft:#F4F7F6;
+    /* 강조: 추천·주요 버튼은 짙은 청록, 급한 것(마감 임박·필수)은 선명한 주황 */
+    --seal:#0B7A68; --seal-weak:#E2F3EE; --seal-line:#B7DED3;
+    --hot:#E4570B; --hot-weak:#FFEEE2;
+    --ok:#0B7A68; --warn:#A86B12;
     --radius-s:6px; --radius-m:10px;
   }
   *{box-sizing:border-box}
@@ -28,7 +33,7 @@
   .today{color:var(--muted);font-size:.9rem;white-space:nowrap}
   .nav{display:flex;gap:4px}
   .nav a{text-decoration:none;padding:6px 12px;border-radius:999px;font-weight:600;font-size:.93rem;color:var(--muted)}
-  .nav a[aria-current="page"]{background:var(--ink);color:#fff}
+  .nav a[aria-current="page"]{background:var(--seal);color:#fff}
   @media (max-width:560px){.brand small{display:none}}
 
   .brief{padding:38px 0 20px}
@@ -43,13 +48,13 @@
   .feed b{display:block;font-size:.92rem}
   .feed .st{display:flex;align-items:center;gap:6px;color:var(--muted)}
   .feed .dot{width:8px;height:8px;border-radius:50%;background:var(--faint);flex:none}
-  .feed.ok .dot{background:var(--ok)} .feed.err .dot{background:var(--seal)} .feed.sample .dot{background:#C9A24A}
+  .feed.ok .dot{background:var(--ok)} .feed.err .dot{background:var(--hot)} .feed.sample .dot{background:#C9A24A}
   .feed .msg{display:block;color:var(--muted);font-size:.78rem;overflow-wrap:anywhere}
 
   .jump{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;align-items:center}
   .jump a{display:inline-flex;align-items:baseline;gap:6px;text-decoration:none;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:600;font-size:.93rem}
   .jump a b{font-variant-numeric:tabular-nums}
-  .jump a.rec{border-color:var(--seal);color:var(--seal)}
+  .jump a.rec{background:var(--seal);border-color:var(--seal);color:#fff}
   .jump .copy{margin-left:auto;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:999px;padding:6px 14px;font-weight:600;font-size:.93rem;cursor:pointer}
   @media (max-width:620px){.jump .copy{margin-left:0}}
 
@@ -70,7 +75,7 @@
   .chips{display:flex;flex-wrap:wrap;gap:6px}
   .chip input{position:absolute;opacity:0;pointer-events:none}
   .chip span{display:inline-block;padding:4px 10px;border:1px solid var(--line);border-radius:999px;font-size:.86rem;cursor:pointer;background:var(--soft);user-select:none}
-  .chip input:checked + span{background:var(--ink);border-color:var(--ink);color:#fff}
+  .chip input:checked + span{background:var(--seal);border-color:var(--seal);color:#fff;font-weight:600}
   .chip input:focus-visible + span{outline:3px solid #3B6FD8;outline-offset:2px}
   .row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
   .inp,select{width:100%;padding:7px 10px;border:1px solid var(--line);border-radius:var(--radius-s);background:#fff}
@@ -81,11 +86,11 @@
   .quick{display:flex;gap:10px;margin:0 0 8px}
   .quick button{background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:.82rem}
   .radio{display:flex;gap:8px;align-items:flex-start;font-size:.9rem;cursor:pointer;margin-bottom:4px}
-  .radio input{margin-top:5px;accent-color:var(--ink)}
+  .radio input{margin-top:5px;accent-color:var(--seal)}
   .go{display:block;width:100%;margin:6px 0 12px;padding:11px 14px;border:0;border-radius:var(--radius-s);background:var(--seal);color:#fff;font-weight:700;font-size:1rem;cursor:pointer}
   .go:hover{filter:brightness(1.05)}
-  .go.dirty{box-shadow:0 0 0 3px #F3C9C5}
-  .req{color:var(--seal);font-weight:700;margin-left:2px}
+  .go.dirty{background:var(--hot);box-shadow:0 0 0 3px var(--hot-weak)}
+  .req{color:var(--hot);font-weight:800;margin-left:2px}
   .intro{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-m);padding:28px 26px}
   .intro h2{margin:0 0 8px;font-size:1.2rem;letter-spacing:-0.03em}
   .intro p{margin:0 0 12px;color:var(--muted)}
@@ -107,6 +112,10 @@
   .stamp b{font-weight:800;font-size:1rem;letter-spacing:-0.04em}
   .stamp small{font-size:.66rem;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
   .stamp.rec{color:var(--seal)}
+  .card.rec{border-color:var(--seal-line);border-left:5px solid var(--seal);box-shadow:0 1px 0 var(--seal-line)}
+  .card.rec .why{background:var(--seal-weak)}
+  .card.rec h3{color:#123F37}
+  .brief h1 b{color:var(--seal)}
   .stamp.cond{color:var(--ink);border-style:dashed;box-shadow:none}
   @media (max-width:620px){.stamp{width:56px;height:56px}.stamp b{font-size:.88rem}}
   .meta{font-size:.86rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
@@ -117,7 +126,7 @@
   .card h3 a{text-decoration:none} .card h3 a:hover{text-decoration:underline}
   .dl{text-align:right;white-space:nowrap}
   .dl .d{font-weight:800;font-variant-numeric:tabular-nums}
-  .dl .d.urgent{color:var(--seal)} .dl .d.soon{color:var(--warn)}
+  .dl .d.urgent{color:#fff;background:var(--hot);border-radius:4px;padding:1px 8px;display:inline-block} .dl .d.soon{color:var(--hot)}
   .dl .when{font-size:.82rem;color:var(--muted)}
 
   .facts{display:flex;flex-wrap:wrap;gap:4px 18px;margin:10px 0 0 88px;font-size:.9rem;color:var(--ink)}
@@ -132,7 +141,7 @@
   .card-foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0 0 88px;padding-top:12px;border-top:1px dashed var(--line)}
   @media (max-width:620px){.facts,.why,.check,.card-foot{margin-left:0}}
   .btn{border:1px solid var(--line);background:#fff;border-radius:var(--radius-s);padding:5px 12px;font-size:.88rem;cursor:pointer;font-weight:600}
-  .btn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .btn.on{background:var(--seal);color:#fff;border-color:var(--seal)}
   .status{width:auto;font-size:.86rem;padding:4px 8px}
   .orig{font-size:.86rem;color:var(--muted);margin-left:auto}
 
@@ -213,7 +222,7 @@
           <label><span class="field-label">어학 수준</span><select id="lang"></select></label>
         </fieldset>
         <fieldset>
-          <label><span class="field-label">희망 연봉</span><select id="salary"></select></label>
+          <label><span class="field-label">희망 연봉<span class="req">*</span></span><select id="salary"></select></label>
           <div class="unit" style="margin-top:4px">연봉이 적힌 공고 중 희망보다 낮은 공고는 빠져요. 연봉이 없는 공고는 남겨 둬요.</div>
         </fieldset>
         <fieldset>
@@ -268,7 +277,7 @@ const RANKS = ["대령","중령","소령","대위","준장 이상","준위","원
 const FIELD_ORDER = ["준장 이상","대령","중령","소령"];   // 영관급 이상
 const LANG_LEVELS = ["없음","기초","중급","상급","원어민 수준"];
 const REGIONS = ["서울","경기","인천","대전","세종","충남","충북","강원","부산","대구","광주","울산","경북","경남","전북","전남","제주"];
-const SALARY_OPTIONS = [["0","미고려"],["4000","4천만 원 이상"],["5000","5천만 원 이상"],["7000","7천만 원 이상"]];
+const SALARY_OPTIONS = [["0","미고려"],["4000","4천만 원 이상"],["5000","5천만 원 이상"],["6000","6천만 원 이상"],["7000","7천만 원 이상"]];
 const CAPITAL = ["서울","경기","인천"];
 const SOURCES = [
   {name:"나라일터", label:"인사혁신처 공공취업정보"},
@@ -305,7 +314,7 @@ const DEFAULT_PROFILE = {
   fields:[],
   keywords:["",""],
   lang:"",
-  salary:"0",
+  salary:"",
   regions:[],
   start:weekAgo, beforeMode:"ref",
   sources:SOURCES.map(s => s.name),
@@ -376,7 +385,7 @@ function migrate(p){
   if (!Array.isArray(p.regions)) p.regions = Array.isArray(p.movable) ? [...CAPITAL, ...p.movable] : [];
   delete p.movable;
   if (!Array.isArray(p.keywords)) p.keywords = ["",""];
-  if (p.salary == null) p.salary = "0";
+  if (p.salary == null) p.salary = "";
   return p;
 }
 let profile = Object.assign(structuredClone(DEFAULT_PROFILE), migrate(store.get("dasi4.profile", {})));   // 왼쪽 입력 중인 값
@@ -529,7 +538,7 @@ function fillForm(){
   $("#lang").innerHTML = `<option value="">선택하세요</option>` + LANG_LEVELS.map(l => `<option ${l === profile.lang ? "selected" : ""}>${l}</option>`).join("");
   ["discharge","years","project","start"].forEach(id => $("#" + id).value = profile[id]);
   $("#kw1").value = profile.keywords[0] || ""; $("#kw2").value = profile.keywords[1] || "";
-  $("#salary").innerHTML = SALARY_OPTIONS.map(([v, l]) => `<option value="${v}" ${String(profile.salary) === v ? "selected" : ""}>${l}</option>`).join("");
+  $("#salary").innerHTML = `<option value="">선택하세요</option>` + SALARY_OPTIONS.map(([v, l]) => `<option value="${v}" ${String(profile.salary) === v ? "selected" : ""}>${l}</option>`).join("");
   document.querySelectorAll('input[name="beforeMode"]').forEach(r => r.checked = r.value === profile.beforeMode);
   chips($("#fieldChips"), Object.keys(FIELD_DICT), "fields");
   chips($("#regionChips"), REGIONS, "regions");
@@ -569,7 +578,7 @@ function cardHTML(e, idx){
     e.posted && ["등록", md(e.posted)],
   ].filter(Boolean);
   return `
-  <article class="card" data-id="${esc(j.id)}">
+  <article class="card ${isRec ? "rec" : ""}" data-id="${esc(j.id)}">
     <div class="card-head">
       <div class="stamp ${isRec ? "rec" : "cond"} ${isRec && idx === 0 && firstPaint ? "first" : ""}" aria-label="${e.verdict}, 적합도 ${e.score}점"><b>${e.verdict}</b><small>${e.score}점</small></div>
       <div>
@@ -636,7 +645,7 @@ function renderIntro(counts){
       <ol>
         <li>최종 계급, 전역 예정일, 군 경력을 입력하세요.</li>
         <li>주요 사업 규모·역할을 적고, <b>핵심 역량</b>을 고르거나 직접 입력하세요.</li>
-        <li>어학 수준, 희망 연봉, <b>희망 지역</b>을 고르세요. 고르지 않은 지역의 공고는 빠져요.</li>
+        <li>어학 수준, <b>희망 연봉</b>, <b>희망 지역</b>을 고르세요. 희망 연봉보다 낮은 공고와 고르지 않은 지역의 공고는 빠져요.</li>
         <li><b>맞춤 공고 보기</b>를 누르세요.</li>
       </ol>
     </div>`;
@@ -799,6 +808,7 @@ document.querySelectorAll("[data-region]").forEach(b => b.addEventListener("clic
 $("#form").addEventListener("submit", e => {
   e.preventDefault();
   if (!profile.fields.length && !profile.keywords.some(k => k.trim())){ toast("핵심 역량을 하나 이상 고르거나 직접 입력해 주세요."); $("#fieldChips").scrollIntoView({block:"center"}); return; }
+  if (profile.salary === "" || profile.salary == null){ toast("희망 연봉을 골라 주세요. 연봉을 따지지 않으려면 '미고려'를 고르세요."); $("#salary").scrollIntoView({block:"center"}); $("#salary").focus(); return; }
   if (!profile.regions.length){ toast("희망 지역을 하나 이상 골라 주세요."); $("#regionChips").scrollIntoView({block:"center"}); return; }
   if (!profile.sources.length){ toast("채용공고 출처를 하나 이상 골라 주세요."); return; }
   applied = structuredClone(profile);
