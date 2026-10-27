@@ -8,7 +8,7 @@ const GOJOBS = `<html><body><table><tr><th scope="row">공고명</th><td>조달�
 <textarea id="content" readonly>조달청 기간제근로자 공개경쟁 채용시험 공고&#40;제2026-524호&#41;\r\n- 모집분야 : 시설공사 맞춤형서비스 설계검토 업무 (기계 1명)\r\n- 자격요건 : 공고문 참조</textarea></body></html>`;
 const JOBABA = `<html><body><header>메뉴 보안 로그인</header><main class="jb-container"><article class="jb-detaildoc">
 <h1 class="jb-detailhead__title">2025년 경기도 누림하우스 주거파트너 모집 공고</h1>
-<section><h2>📂 담당업무</h2><p>가사지원, 건강위생 관리, 외출지원</p></section>
+<section><h2>📂 담당업무</h2><p>가사지원, 건강위생 관리, 외출지원 &middot; 상담&#x00B7;조언</p></section>
 <section><h2>📂 근무조건</h2><p>보수 및 복지 : 시급 12,152원</p></section></article><aside>추천 공고 정보보안</aside></main></body></html>`;
 
 let passed = 0;
@@ -36,7 +36,7 @@ const fakeFetch = html => async () => ({ ok: true, status: 200, text: async () =
 
   await t("잡아바: 본문(article)만 읽고 메뉴·옆 광고는 뺀다", () => {
     const text = D.extract(JOBABA, "https://job.gg.go.kr/pblcEmpmn/publicJobDetail.do?seq=1");
-    assert.ok(text.includes("외출지원") && text.includes("시급 12,152원"));
+    assert.ok(text.includes("외출지원 · 상담·조언") && text.includes("시급 12,152원"));
     assert.ok(!text.includes("정보보안") && !text.includes("로그인"));
   });
 
