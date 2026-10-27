@@ -84,6 +84,20 @@ t("경기 공공일자리(JobFndtnPublJob) 실제 응답 형식과 지역", () =
   assert.equal(jobs[2].url, "https://job.gg.go.kr/pblcEmpmn/publicJobDetail.do?seq=37256");
 });
 
+t("민간 채용은 경영·사무, 연구·공학 기술직(또는 직무 미기재)만 남긴다", () => {
+  assert.ok(S.privateFieldOk({ field: "경영ㆍ사무ㆍ금융ㆍ보험직" }));
+  assert.ok(S.privateFieldOk({ field: "연구직 및 공학 기술직" }));
+  assert.ok(S.privateFieldOk({ field: "" }));
+  assert.ok(!S.privateFieldOk({ field: "설치ㆍ정비ㆍ생산직" }));
+  assert.ok(!S.privateFieldOk({ field: "미용ㆍ여행ㆍ숙박ㆍ음식ㆍ경비ㆍ청소직" }));
+});
+
+t("전입·비상임 공고는 채용공고로 보지 않는다", () => {
+  assert.ok(!S.isPosting("성평등가족부 전산직공무원(7급) 전입시험 공고"));
+  assert.ok(!S.isPosting("기술보증기금 비상임이사 공개모집 공고"));
+  assert.ok(S.isPosting("육군 1급 일반임기제군무원 채용 공고"));
+});
+
 t("키는 로그에 남기지 않는다", () => {
   assert.equal(S.hideKey("https://a?serviceKey=SECRET&x=1"), "https://a?serviceKey=***&x=1");
   assert.equal(S.normKey("abc%2Bdef%3D%3D"), "abc+def==");

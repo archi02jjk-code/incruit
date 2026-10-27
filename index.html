@@ -256,13 +256,13 @@
     <ul>
       <li><strong>경력 연관 (최대 40점)</strong>: 공고명·직무분야에 내 핵심 역량이 하나 맞으면 25점, 둘 이상이면 40점. 하나도 없으면 제외합니다.</li>
       <li><strong>반드시 포함 (점수 없음)</strong>: 단어를 입력하면 공고명·기관·직무·근무지와 <b>공고 내용(원문)</b>에서 찾고, 없으면 제외합니다. 두 개면 둘 다 있어야 합니다. 비워 두면 따지지 않습니다. 원문 내용은 나라일터·잡아바 공고만 읽을 수 있고, 잡코리아 등 외부 사이트 공고는 제목 기준으로만 판단합니다.</li>
-      <li><strong>군 경력 강점 (25점)</strong>: 국방, 방산, 비상대비, 충무, 민방위, 예비역, 제대군인 같은 단어가 있으면 더합니다.</li>
+      <li><strong>군 경력 강점 (25점)</strong>: 국방, 방산, 비상대비, 충무, 민방위, 예비역, 제대군인, 군무원, 육·해·공군, 해병대, 병무청, 방위사업청 같은 단어가 공고명이나 기관명에 있으면 더합니다. 군 조직이 낸 공고는 핵심 역량 단어가 없어도 역량 1개(25점)로 인정합니다.</li>
       <li><strong>직급 (최대 35점)</strong>: 공고명의 직급(4급, 팀장, 전문위원, 나급, 가군 등)을 6단계로 나누고 최종 계급에 맞는 단계와 비교합니다. 맞으면 35점, 한 단계 높으면 25점, 한 단계 낮으면 20점, 두 단계 이상 높으면 15점, 두 단계 이상 낮으면 5점, 직급이 안 보이면 15점. 신입·인턴·시간강사·공공근로는 제외합니다.
         <br>계급별 맞는 직급: 준장 이상·대령 → 3~4급·국장·과장급 / 중령 → 4~5급·과장급·팀장급 / 소령 → 5~6급·팀장급·책임급 / 대위·준위·원사 → 6~8급·책임급 / 상사 → 7~9급. 흔히 쓰는 대략적 대응이며 공식 환산표가 아니에요.</li>
       <li><strong>희망 지역 (점수 없음)</strong>: 고른 지역의 공고만 남기고 나머지는 제외합니다. 근무지가 정해지지 않은 공고는 남겨 둡니다.</li>
-      <li><strong>희망 연봉 (점수 없음)</strong>: 공고에 연봉이 적혀 있고 그 최고액이 희망 연봉보다 낮으면 제외합니다. 월급·시급은 연봉으로 바꿔 비교합니다(시급은 월 209시간 기준). 희망 연봉을 골랐는데 공고에 연봉이 없으면 점수가 높아도 <b>추천 대신 검토</b>로 둡니다.</li>
+      <li><strong>희망 연봉 (점수 없음)</strong>: 공고에 연봉이 적혀 있고 그 최고액이 희망 연봉보다 낮으면 제외합니다. 월급·시급은 연봉으로 바꿔 비교합니다(시급은 월 209시간 기준). 희망 연봉을 골랐는데 <b>민간 공고</b>에 연봉이 없으면 점수가 높아도 추천 대신 검토로 둡니다. 공공기관 공고는 원래 연봉을 적지 않아 이 규칙을 적용하지 않습니다.</li>
       <li><strong>어학</strong>: 공고명에 해외·국제·영어 같은 단어가 있는데 어학 수준이 '상급' 아래면 추천 대신 검토로 둡니다. 상급 이상이면 5점을 더합니다.</li>
-      <li>70점 이상 <strong>추천</strong>, 40~69점 <strong>검토</strong>, 그 아래나 마감된 공고는 <strong>제외</strong>합니다. 조사 기간은 최초 등록일로 판단합니다.</li>
+      <li>60점 이상 <strong>추천</strong>, 40~59점 <strong>검토</strong>, 그 아래나 마감된 공고는 <strong>제외</strong>합니다. 조사 기간은 최초 등록일로 판단합니다.</li>
     </ul>
     <p>공공 API는 공고명·기관·기간·지역 정도만 주기 때문에, 자격 요건과 연봉은 공고 원문에서 꼭 확인하세요.</p>
     <p id="sampleNote"><span class="flag">샘플 데이터</span> 파일을 바로 열면 연습용 가상 공고가 보입니다. <code>node server.js</code>로 실행하고 API 키를 넣으면 실제 공고로 바뀝니다.</p>
@@ -289,7 +289,7 @@ const STATUSES = ["관심","지원 완료","서류 합격","면접","최종 결�
 
 // 핵심 경력 분야 → 공고에서 찾을 단어
 const FIELD_DICT = {
-  "방위력개선사업": ["방위력개선","방위사업","무기체계","전력화","전력사업","획득사업","국방사업","사업관리"],
+  "방위력개선사업": ["방위력개선","방위사업","무기체계","전력화","전력사업","획득사업","국방사업"],
   "국방정보화":    ["정보화","전산","정보시스템","정보통신","디지털","ICT","SI","데이터"],
   "정보보안":      ["보안","정보보호","사이버","개인정보","관제"],
   "비상대비·안전": ["비상대비","충무","민방위","재난","안전관리","예비군","위기관리"],
@@ -299,8 +299,11 @@ const FIELD_DICT = {
   "행정·기획":     ["기획","행정","총무","인사","경영지원"],
   "시설":          ["시설","건축","전기","설비"],
 };
-const VET_WORDS   = ["제대군인","예비역","전역","국방","군 경력","군경력","비상대비","충무","민방위","예비군","방산","방위"];
-const ENTRY_WORDS = ["청년인턴","인턴","체험형","시간강사","방과후","공공근로","아르바이트","기간제 교사","기간제교사","대체교사","돌봄","신입",
+const VET_WORDS   = ["제대군인","예비역","전역","국방","군 경력","군경력","비상대비","충무","민방위","예비군","방산","방위",
+                     "군무원","국방부","육군","해군","공군","해병","병무청","방위사업청","국군","안보","합동참모","국방과학연구소","국방기술"];
+// 군 조직이 낸 공고나 군무원 채용은 군 경력 자체가 역량이라, 핵심 역량 단어가 없어도 '군 조직' 역량으로 인정
+const MIL_RE = /군무원|국방부|육군|해군|공군|해병대|병무청|방위사업청|국군|합동참모|국방과학연구소|국방기술(품질원|진흥연구소)|국방전산|국방시설/;
+const ENTRY_WORDS = ["산불","대응단","감시원","지킴이","청년인턴","인턴","체험형","시간강사","방과후","공공근로","아르바이트","기간제 교사","기간제교사","대체교사","돌봄","신입",
                      "조리원","조리사","배식","미화","청소","안전요원","운전원","경비원","실무사"];
 // ---------- 공고 직급 단계 (6이 가장 높음) ----------
 //   6 국장·3급 이상 / 5 4급·과장급 / 4 5급·팀장급 / 3 6급·책임급 / 2 7~8급 / 1 9급·보조
@@ -320,7 +323,8 @@ const RANK_RANGE = {
 // 공고명에서 직급 단계 읽기: 숫자 급(4급) → 시간선택제 가~마급 → 전문경력관 가~다군 → 직위 단어
 function jobTier(title, extra){
   const t = String(title || "");
-  const g = t.match(/([1-9])\s*급/);
+  const ho = /임기제/.test(t) && t.match(/(?:연봉등급\s*|행정|전산|기술)?([1-9])\s*호/);   // 일반임기제 '연봉등급 4호(서기관)' = 4급 상당
+  const g = t.match(/([1-9])\s*급/) || ho;
   if (g){ const n = +g[1]; return { tier: n <= 3 ? 6 : n === 4 ? 5 : n === 5 ? 4 : n === 6 ? 3 : n <= 8 ? 2 : 1, word: `${n}급` }; }
   const ga = t.match(/(가|나|다|라|마)급/);            // 시간선택제임기제 가급(5급 상당) … 마급(9급 상당)
   if (ga) return { tier: {가:4, 나:3, 다:2, 라:2, 마:1}[ga[1]], word: `${ga[1]}급` };
@@ -450,7 +454,9 @@ function annualMax(text){
 function evaluate(job){
   const P = applied;
   const yearsText = P.years ? `군 경력 ${P.years}년` : "군 경력";
-  const text = [job.title, job.field, job.prefer].filter(Boolean).join(" ");   // 기관명은 매칭에 쓰지 않음
+  const orgParts = String(job.org || "").replace(/\(재\)|\(사\)|\(주\)|재단법인|사단법인|주식회사/g, " ").split(/\s+/).filter(w => w.length >= 3);
+  const titleNoOrg = orgParts.reduce((t, w) => t.split(w).join(" "), String(job.title || ""));
+  const text = [titleNoOrg, job.field, job.prefer].filter(Boolean).join(" ");   // 기관명은 매칭에 쓰지 않음
   const titleField = [job.title, job.field, job.career].filter(Boolean).join(" ");
   const out = [];                  // 제외 사유
   let score = 0;
@@ -459,10 +465,12 @@ function evaluate(job){
   const hitFields = [], hitTerms = [];
   for (const f of P.fields){
     const dict = FIELD_DICT[f] || [];
-    const w = findWords(job.title, dict).concat(findWords(text, dict))   // 공고명에 있는 단어를 먼저
+    const w = findWords(titleNoOrg, dict).concat(findWords(text, dict))   // 공고명(기관명 뺀)에 있는 단어를 먼저
       .filter(x => !hitTerms.includes(x));                                // 다른 분야에서 이미 쓴 단어는 다시 세지 않음
     if (w.length){ hitFields.push(f); hitTerms.push(w[0]); }
   }
+  const mil = (job.title + " " + job.org).match(MIL_RE);
+  if (mil && !hitFields.length){ hitFields.push("군 조직"); hitTerms.push(mil[0]); }   // 군 조직 공고는 역량 1개로 인정
   if (!hitFields.length) out.push("내 핵심 역량과 관련된 직무가 아님");
 
   // 반드시 포함: 공고명·기관·직무·근무지 + 공고 내용(원문)에서 찾는다. 비워 두면 따지지 않음
@@ -519,11 +527,15 @@ function evaluate(job){
   const wantSalary = Number(P.salary) || 0;
   const salMax = annualMax(job.salary);
   let salaryKind = "none";
+  const isPublic = job.source !== "경기 민간채용";
   if (wantSalary){
     if (salMax == null) salaryKind = "unknown";
     else if (salMax >= wantSalary) salaryKind = "ok";
     else { salaryKind = "low"; out.push(`보수 '${job.salary}': 희망 연봉(${wantSalary.toLocaleString()}만 원 이상)보다 낮음`); }
   }
+
+  // 공공기관 공고는 연봉을 적지 않는 게 보통이라, '연봉 없음 → 검토' 규칙은 민간 공고에만
+  const salaryCap = salaryKind === "unknown" && !isPublic;
 
   // 어학
   const langIdx = LANG_LEVELS.indexOf(P.lang);
@@ -539,7 +551,7 @@ function evaluate(job){
   let verdict;
   if (closed){ verdict = "제외"; out.unshift(`${md(dl)} 마감`); }
   else if (out.length) verdict = "제외";
-  else if (score >= 70 && !langCap && salaryKind !== "unknown") verdict = "추천";
+  else if (score >= 60 && !langCap && !salaryCap) verdict = "추천";
   else if (score >= 40) verdict = "검토";
   else { verdict = "제외"; out.push(`적합도 낮음 (${score}점)`); }
 
@@ -549,7 +561,9 @@ function evaluate(job){
   const projectHit = P.project && hitFields.some((f, i) =>
     f.split("·").some(part => P.project.includes(part.replace("국방", ""))) || P.project.includes(hitTerms[i]));
   const why = [
-    ["경력", projectHit
+    ["경력", hitFields[0] === "군 조직"
+      ? `'${hitTerms[0]}' 공고라 ${yearsText}이 그대로 경력으로 이어져요.`
+      : projectHit
       ? `${P.project} 경험이 '${terms}' 업무와 바로 이어져요.`
       : `${hitFields.join("·")} 경력이 공고의 '${terms}' 업무와 이어져요.`],
     ["직급", (() => {
@@ -578,13 +592,13 @@ function evaluate(job){
 
   // 확인할 점 (한 줄)
   const checks = [];
-  if (salaryKind === "unknown" && score >= 70 && !langCap) checks.push("공고에 연봉이 없어 추천 대신 검토로 뒀어요. 공고문에서 연봉을 확인하세요.");
+  if (salaryCap && score >= 60 && !langCap) checks.push("민간 공고인데 연봉이 없어 추천 대신 검토로 뒀어요. 공고문에서 연봉을 확인하세요.");
   if (langCap) checks.push(`'${langNeed[0]}' 관련 공고라 어학 요건을 확인하세요 (현재 어학 수준: ${P.lang || "미입력"}).`);
   if (job.repost) checks.push("재공고예요. 최초 공고일과 지난 공고 상황을 확인하세요.");
   if (/임기제/.test(job.title)) checks.push("임기제라 임기와 연장 조건을 확인하세요.");
   if (regionKind === "unknown") checks.push("근무지가 정해지지 않은 공고예요.");
   if (job.salary && !/\d/.test(job.salary)) checks.push(`보수가 '${job.salary}'(이)라고만 나와 있어 면접 때 확인하세요.`);
-  else if (salaryKind === "unknown") checks.push("공고에 연봉이 없어 희망 연봉에 맞는지 공고문에서 확인하세요.");
+  else if (salaryKind === "unknown") checks.push(isPublic ? "공공기관 공고라 연봉이 공고에 없어요. 직급별 보수는 공고문에서 확인하세요." : "공고에 연봉이 없어 희망 연봉에 맞는지 공고문에서 확인하세요.");
 
   return { job, verdict, score, reasons: out, why, check: checks[0] || "", dl, posted: job.posted ? D(job.posted) : null, regionName, langCap,
            needContent: needContent && out.length === 1 && !closed };   // 다른 이유 없이 '반드시 포함'만 걸린 공고만 원문을 읽는다
