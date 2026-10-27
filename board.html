@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>다시출근 · 문의 게시판</title>
+<title>다시출근 · 기능개선요구</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
   :root{
@@ -105,15 +105,15 @@
     <a class="brand" href="./"><span class="brand-mark" aria-hidden="true">출</span>다시출근</a>
     <nav class="nav" aria-label="메뉴">
       <a href="./">맞춤 공고</a>
-      <a href="board.html" aria-current="page">문의하기</a>
+      <a href="board.html" aria-current="page">기능개선요구</a>
     </nav>
   </div>
 </header>
 
 <main class="wrap">
   <section class="head">
-    <h1>문의 게시판</h1>
-    <p>사이트 이용법, 추천 기준, 공고 데이터에 대해 궁금한 점을 남겨 주세요. 관리자가 답변을 달아 드려요.</p>
+    <h1>기능개선요구</h1>
+    <p>있으면 좋겠는 기능, 불편한 점, 추천 기준이나 공고 데이터에 대한 개선 의견을 남겨 주세요. 관리자가 확인하고 답변을 달아 드려요.</p>
   </section>
   <div id="view"></div>
 </main>
@@ -146,7 +146,7 @@ async function showList(p = page){
   if (status !== 200) return notice("목록을 불러오지 못했어요.", "잠시 후에 새로고침해 주세요.");
   const pages = Math.max(1, Math.ceil(data.total / data.pageSize));
   $("#view").innerHTML = `
-    <div class="bar"><span class="count">문의 ${data.total}건</span><button class="btn primary" data-go="#write">문의 쓰기</button></div>
+    <div class="bar"><span class="count">요구 ${data.total}건</span><button class="btn primary" data-go="#write">개선 요구 쓰기</button></div>
     <div class="panel">
       ${data.items.length ? `<ul class="list">${data.items.map((it, i) => `
         <li><a class="row" href="#post-${it.id}">
@@ -155,7 +155,7 @@ async function showList(p = page){
           <span class="tag-wrap"><span class="tag ${it.answered ? "done" : "wait"}">${it.answered ? "답변 완료" : "답변 대기"}</span></span>
           <span class="who">${esc(it.name)} · ${dateText(it.created_at)}</span>
         </a></li>`).join("")}</ul>`
-      : `<div class="notice"><strong>아직 문의가 없어요.</strong>첫 번째 문의를 남겨 주세요.</div>`}
+      : `<div class="notice"><strong>아직 등록된 요구가 없어요.</strong>바라는 기능이나 불편한 점을 첫 번째로 남겨 주세요.</div>`}
     </div>
     ${pages > 1 ? `<nav class="pager" aria-label="쪽 이동">${Array.from({length: pages}, (_, k) => k + 1).slice(Math.max(0, p - 5), Math.max(0, p - 5) + 9)
       .map(n => `<button class="btn" data-page="${n}" ${n === p ? 'aria-current="page"' : ""}>${n}</button>`).join("")}</nav>` : `<div style="height:40px"></div>`}`;
@@ -164,19 +164,19 @@ async function showList(p = page){
 function showWrite(){
   $("#view").innerHTML = `
     <form class="panel form" id="writeForm" novalidate>
-      <h2>문의 쓰기</h2>
+      <h2>개선 요구 쓰기</h2>
       <div class="row2">
         <div class="field"><label for="w-name">이름</label><input class="inp" id="w-name" maxlength="20" autocomplete="nickname" placeholder="별명도 괜찮아요"></div>
         <div class="field"><label for="w-pw">비밀번호</label><input class="inp" id="w-pw" type="password" maxlength="30" autocomplete="new-password" placeholder="4자 이상">
           <div class="help">글을 지우거나 비밀글을 볼 때 써요.</div></div>
       </div>
       <div class="field"><label for="w-title">제목</label><input class="inp" id="w-title" maxlength="100"></div>
-      <div class="field"><label for="w-content">내용</label><textarea id="w-content" maxlength="3000" placeholder="개인정보(전화번호, 주민번호 등)는 적지 말아 주세요."></textarea>
+      <div class="field"><label for="w-content">내용</label><textarea id="w-content" maxlength="3000" placeholder="어떤 화면에서, 무엇을, 어떻게 바꾸면 좋을지 적어 주세요. 개인정보(전화번호 등)는 적지 말아 주세요."></textarea>
         <div class="help"><span id="w-count">0</span> / 3000자</div></div>
       <div class="hp" aria-hidden="true"><label>웹사이트<input id="w-website" tabindex="-1" autocomplete="off"></label></div>
       <label class="check"><input type="checkbox" id="w-private"> 비밀글로 쓰기 (나와 관리자만 볼 수 있어요)</label>
       <p class="msg" id="w-msg" role="alert"></p>
-      <div class="actions"><button type="button" class="btn" data-go="#">취소</button><button class="btn primary" id="w-submit">문의 등록</button></div>
+      <div class="actions"><button type="button" class="btn" data-go="#">취소</button><button class="btn primary" id="w-submit">요구 등록</button></div>
     </form>`;
   $("#w-content").addEventListener("input", e => $("#w-count").textContent = e.target.value.length);
   $("#w-name").focus();
@@ -190,7 +190,7 @@ function showWrite(){
     const { status, data } = await api("POST", body);
     $("#w-submit").disabled = false;
     if (status !== 201) return $("#w-msg").textContent = data.error || "등록하지 못했어요. 다시 시도해 주세요.";
-    toast("문의를 등록했어요.");
+    toast("개선 요구를 등록했어요.");
     go(data.id ? `#post-${data.id}` : "#");
   });
 }
