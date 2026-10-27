@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>다시출근 · 문의 게시판</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --bg:#EAF0F4; --surface:#FFFFFF; --ink:#17233A; --muted:#5D6A7C; --faint:#9AA5B4;
+    --line:#D2DBE4; --soft:#F4F7FA; --seal:#B4312A; --ok:#1E7556; --warn:#A65F00;
+    --radius-s:6px; --radius-m:10px;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;font-size:16px;line-height:1.6;letter-spacing:-0.01em;word-break:keep-all}
+  button,input,select,textarea{font:inherit;color:inherit}
+  :focus-visible{outline:3px solid #3B6FD8;outline-offset:2px}
+  a{color:inherit}
+  .wrap{max-width:920px;margin:0 auto;padding:0 20px}
+
+  header.top{border-bottom:1px solid var(--line);background:var(--surface)}
+  header.top .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;gap:12px;max-width:1160px}
+  .brand{font-weight:800;font-size:1.15rem;letter-spacing:-0.03em;display:flex;align-items:center;gap:10px;text-decoration:none}
+  .brand-mark{width:26px;height:26px;border-radius:50%;border:2.5px solid var(--seal);display:grid;place-items:center;color:var(--seal);font-size:.7rem;font-weight:800;transform:rotate(-8deg)}
+  .nav{display:flex;gap:4px}
+  .nav a{text-decoration:none;padding:6px 12px;border-radius:999px;font-weight:600;font-size:.93rem;color:var(--muted)}
+  .nav a[aria-current="page"]{background:var(--ink);color:#fff}
+
+  .head{padding:36px 0 18px}
+  .head h1{margin:0;font-size:clamp(1.5rem,3.2vw,2.1rem);letter-spacing:-0.04em;line-height:1.3}
+  .head p{margin:8px 0 0;color:var(--muted)}
+
+  .bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .bar .count{color:var(--muted);font-size:.92rem}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:var(--radius-s);padding:7px 14px;font-weight:600;font-size:.92rem;cursor:pointer}
+  .btn.primary{background:var(--seal);border-color:var(--seal);color:#fff}
+  .btn.dark{background:var(--ink);border-color:var(--ink);color:#fff}
+  .btn:disabled{opacity:.6;cursor:default}
+  .linkbtn{background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:.88rem}
+
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-m)}
+  .list{list-style:none;margin:0;padding:0}
+  .list li{border-bottom:1px solid var(--line)}
+  .list li:last-child{border-bottom:0}
+  .row{display:grid;grid-template-columns:56px 1fr auto auto;gap:14px;align-items:center;padding:13px 18px;text-decoration:none}
+  .row:hover{background:var(--soft)}
+  .row .no{color:var(--faint);font-size:.85rem;font-variant-numeric:tabular-nums}
+  .row .t{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row .t.private{color:var(--muted);font-weight:500}
+  .row .who{color:var(--muted);font-size:.86rem;white-space:nowrap}
+  .tag{display:inline-block;font-size:.76rem;font-weight:700;border-radius:4px;padding:1px 7px;white-space:nowrap}
+  .tag.done{background:#E5F2EC;color:var(--ok)}
+  .tag.wait{background:var(--soft);color:var(--muted);border:1px solid var(--line)}
+  .tag.lock{background:#FFF1DC;color:var(--warn);margin-right:6px}
+  @media (max-width:620px){
+    .row{grid-template-columns:1fr auto;gap:4px 10px;padding:12px 14px}
+    .row .no{display:none}
+    .row .who{grid-column:1}
+    .row .tag-wrap{grid-row:1;grid-column:2}
+  }
+  .pager{display:flex;justify-content:center;gap:6px;margin:16px 0 40px}
+  .pager button{min-width:36px}
+  .pager button[aria-current="page"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  .form{padding:22px}
+  .form h2,.detail h2{margin:0 0 14px;font-size:1.2rem;letter-spacing:-0.03em}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-weight:700;font-size:.88rem;margin-bottom:6px}
+  .field .help{font-size:.8rem;color:var(--muted);margin-top:4px}
+  .inp,textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:var(--radius-s);background:#fff}
+  textarea{min-height:180px;resize:vertical;line-height:1.6}
+  .row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+  @media (max-width:560px){.row2{grid-template-columns:1fr}}
+  .check{display:flex;gap:8px;align-items:center;font-size:.92rem;cursor:pointer}
+  .check input{accent-color:var(--ink);width:16px;height:16px}
+  .actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:6px}
+  .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+
+  .detail{padding:22px}
+  .detail .meta{color:var(--muted);font-size:.88rem;margin:-6px 0 16px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}
+  .detail .body{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.75;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .answer{margin-top:16px;background:var(--soft);border-left:3px solid var(--ok);border-radius:0 var(--radius-s) var(--radius-s) 0;padding:14px 16px}
+  .answer b{display:block;font-size:.85rem;color:var(--ok);margin-bottom:4px}
+  .answer p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+  .answer.none{border-left-color:var(--line)} .answer.none b{color:var(--muted)}
+  .sub-actions{display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center;margin-top:18px}
+  .inline{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+  .inline .inp{width:auto;flex:1;min-width:160px}
+  .adminbox{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+  .adminbox textarea{min-height:120px}
+
+  .notice{padding:26px 22px;color:var(--muted)}
+  .notice strong{display:block;color:var(--ink);margin-bottom:4px}
+  .msg{font-size:.88rem;color:var(--seal);margin-top:8px;min-height:1.2em}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:8px;font-size:.92rem;opacity:0;pointer-events:none;transition:opacity .2s;max-width:calc(100% - 32px)}
+  .toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./"><span class="brand-mark" aria-hidden="true">출</span>다시출근</a>
+    <nav class="nav" aria-label="메뉴">
+      <a href="./">맞춤 공고</a>
+      <a href="board.html" aria-current="page">문의하기</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="head">
+    <h1>문의 게시판</h1>
+    <p>사이트 이용법, 추천 기준, 공고 데이터에 대해 궁금한 점을 남겨 주세요. 관리자가 답변을 달아 드려요.</p>
+  </section>
+  <div id="view"></div>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const dateText = iso => { const d = new Date(iso); return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}`; };
+let toastTimer;
+function toast(m){ const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2400); }
+
+async function api(method, body, query = ""){
+  const r = await fetch(`api/board${query}`, method === "GET" ? {} : { method, headers: {"Content-Type":"application/json"}, body: JSON.stringify(body) });
+  let data = {}; try { data = await r.json(); } catch {}
+  return { status: r.status, data };
+}
+const go = hash => { if (location.hash === hash) route(); else location.hash = hash; };
+
+/* ---------- 화면들 ---------- */
+function notice(title, text){ $("#view").innerHTML = `<div class="panel notice"><strong>${esc(title)}</strong>${esc(text)}</div>`; }
+
+let page = 1;
+async function showList(p = page){
+  page = p;
+  $("#view").innerHTML = `<div class="panel notice">목록을 불러오는 중이에요.</div>`;
+  const { status, data } = await api("GET", null, `?page=${p}`);
+  if (status === 503) return notice("게시판을 준비하고 있어요.", data.error || "");
+  if (status !== 200) return notice("목록을 불러오지 못했어요.", "잠시 후에 새로고침해 주세요.");
+  const pages = Math.max(1, Math.ceil(data.total / data.pageSize));
+  $("#view").innerHTML = `
+    <div class="bar"><span class="count">문의 ${data.total}건</span><button class="btn primary" data-go="#write">문의 쓰기</button></div>
+    <div class="panel">
+      ${data.items.length ? `<ul class="list">${data.items.map((it, i) => `
+        <li><a class="row" href="#post-${it.id}">
+          <span class="no">${data.total - (p - 1) * data.pageSize - i}</span>
+          <span class="t ${it.is_private ? "private" : ""}">${it.is_private ? `<span class="tag lock">비밀</span>` : ""}${esc(it.title)}</span>
+          <span class="tag-wrap"><span class="tag ${it.answered ? "done" : "wait"}">${it.answered ? "답변 완료" : "답변 대기"}</span></span>
+          <span class="who">${esc(it.name)} · ${dateText(it.created_at)}</span>
+        </a></li>`).join("")}</ul>`
+      : `<div class="notice"><strong>아직 문의가 없어요.</strong>첫 번째 문의를 남겨 주세요.</div>`}
+    </div>
+    ${pages > 1 ? `<nav class="pager" aria-label="쪽 이동">${Array.from({length: pages}, (_, k) => k + 1).slice(Math.max(0, p - 5), Math.max(0, p - 5) + 9)
+      .map(n => `<button class="btn" data-page="${n}" ${n === p ? 'aria-current="page"' : ""}>${n}</button>`).join("")}</nav>` : `<div style="height:40px"></div>`}`;
+}
+
+function showWrite(){
+  $("#view").innerHTML = `
+    <form class="panel form" id="writeForm" novalidate>
+      <h2>문의 쓰기</h2>
+      <div class="row2">
+        <div class="field"><label for="w-name">이름</label><input class="inp" id="w-name" maxlength="20" autocomplete="nickname" placeholder="별명도 괜찮아요"></div>
+        <div class="field"><label for="w-pw">비밀번호</label><input class="inp" id="w-pw" type="password" maxlength="30" autocomplete="new-password" placeholder="4자 이상">
+          <div class="help">글을 지우거나 비밀글을 볼 때 써요.</div></div>
+      </div>
+      <div class="field"><label for="w-title">제목</label><input class="inp" id="w-title" maxlength="100"></div>
+      <div class="field"><label for="w-content">내용</label><textarea id="w-content" maxlength="3000" placeholder="개인정보(전화번호, 주민번호 등)는 적지 말아 주세요."></textarea>
+        <div class="help"><span id="w-count">0</span> / 3000자</div></div>
+      <div class="hp" aria-hidden="true"><label>웹사이트<input id="w-website" tabindex="-1" autocomplete="off"></label></div>
+      <label class="check"><input type="checkbox" id="w-private"> 비밀글로 쓰기 (나와 관리자만 볼 수 있어요)</label>
+      <p class="msg" id="w-msg" role="alert"></p>
+      <div class="actions"><button type="button" class="btn" data-go="#">취소</button><button class="btn primary" id="w-submit">문의 등록</button></div>
+    </form>`;
+  $("#w-content").addEventListener("input", e => $("#w-count").textContent = e.target.value.length);
+  $("#w-name").focus();
+  $("#writeForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const body = { action:"create", name: $("#w-name").value, title: $("#w-title").value, content: $("#w-content").value,
+                   password: $("#w-pw").value, is_private: $("#w-private").checked, website: $("#w-website").value };
+    if (!body.name.trim() || !body.title.trim() || !body.content.trim()) return $("#w-msg").textContent = "이름, 제목, 내용을 모두 적어 주세요.";
+    if (body.password.length < 4) return $("#w-msg").textContent = "비밀번호는 4자 이상으로 정해 주세요.";
+    $("#w-submit").disabled = true;
+    const { status, data } = await api("POST", body);
+    $("#w-submit").disabled = false;
+    if (status !== 201) return $("#w-msg").textContent = data.error || "등록하지 못했어요. 다시 시도해 주세요.";
+    toast("문의를 등록했어요.");
+    go(data.id ? `#post-${data.id}` : "#");
+  });
+}
+
+const pwCache = {};   // 이번 화면에서 비밀글을 연 비밀번호 (새로고침하면 사라짐)
+async function showPost(id){
+  $("#view").innerHTML = `<div class="panel notice">글을 불러오는 중이에요.</div>`;
+  const { status, data } = await api("POST", { action:"view", id, password: pwCache[id] });
+  if (status === 403 && data.needPassword) return showLocked(id);
+  if (status === 404) return notice("없는 글이에요.", "지워졌거나 주소가 잘못됐어요.");
+  if (status === 503) return notice("게시판을 준비하고 있어요.", data.error || "");
+  if (status !== 200) return notice("글을 불러오지 못했어요.", "잠시 후에 다시 시도해 주세요.");
+  const p = data;
+  $("#view").innerHTML = `
+    <article class="panel detail">
+      <h2>${p.is_private ? `<span class="tag lock">비밀</span>` : ""}${esc(p.title)}</h2>
+      <div class="meta"><span>${esc(p.name)}</span><span>${dateText(p.created_at)}</span>
+        <span class="tag ${p.answer ? "done" : "wait"}">${p.answer ? "답변 완료" : "답변 대기"}</span></div>
+      <div class="body">${esc(p.content)}</div>
+      ${p.answer
+        ? `<div class="answer"><b>관리자 답변 · ${dateText(p.answered_at)}</b><p>${esc(p.answer)}</p></div>`
+        : `<div class="answer none"><b>답변을 기다리고 있어요</b><p>관리자가 확인한 뒤 이곳에 답변을 달아 드려요.</p></div>`}
+      <div class="sub-actions">
+        <button class="btn" data-go="#">목록으로</button>
+        <span><button class="linkbtn" id="delToggle">글 지우기</button> &nbsp; <button class="linkbtn" id="adminToggle">관리자 답변</button></span>
+      </div>
+      <form class="inline" id="delForm" hidden>
+        <input class="inp" type="password" id="d-pw" placeholder="글 쓸 때 정한 비밀번호" autocomplete="current-password">
+        <button class="btn dark">지우기</button>
+      </form>
+      <form class="adminbox" id="ansForm" hidden>
+        <div class="field"><label for="a-text">답변</label><textarea id="a-text" maxlength="3000">${esc(p.answer || "")}</textarea>
+          <div class="help">비워서 저장하면 답변이 지워져요.</div></div>
+        <div class="inline" style="margin-top:0"><input class="inp" type="password" id="a-pw" placeholder="관리자 비밀번호" autocomplete="current-password">
+          <button class="btn dark">답변 저장</button></div>
+      </form>
+      <p class="msg" id="d-msg" role="alert"></p>
+    </article>`;
+  $("#delToggle").onclick = () => { $("#delForm").hidden = !$("#delForm").hidden; $("#ansForm").hidden = true; if (!$("#delForm").hidden) $("#d-pw").focus(); };
+  $("#adminToggle").onclick = () => { $("#ansForm").hidden = !$("#ansForm").hidden; $("#delForm").hidden = true; if (!$("#ansForm").hidden) $("#a-text").focus(); };
+  $("#delForm").onsubmit = async e => {
+    e.preventDefault();
+    const { status, data } = await api("POST", { action:"delete", id, password: $("#d-pw").value });
+    if (status !== 200) return $("#d-msg").textContent = data.error || "지우지 못했어요.";
+    toast("글을 지웠어요."); go("#");
+  };
+  $("#ansForm").onsubmit = async e => {
+    e.preventDefault();
+    const { status, data } = await api("POST", { action:"answer", id, adminPassword: $("#a-pw").value, answer: $("#a-text").value });
+    if (status !== 200) return $("#d-msg").textContent = data.error || "저장하지 못했어요.";
+    toast("답변을 저장했어요."); showPost(id);
+  };
+}
+
+function showLocked(id){
+  $("#view").innerHTML = `
+    <form class="panel detail" id="lockForm">
+      <h2><span class="tag lock">비밀</span>비밀글이에요</h2>
+      <p style="margin:0;color:var(--muted)">글을 쓸 때 정한 비밀번호를 넣으면 볼 수 있어요.</p>
+      <div class="inline"><input class="inp" type="password" id="l-pw" placeholder="비밀번호" autocomplete="current-password"><button class="btn dark">글 보기</button></div>
+      <p class="msg" id="l-msg" role="alert"></p>
+      <div class="sub-actions"><button type="button" class="btn" data-go="#">목록으로</button></div>
+    </form>`;
+  $("#l-pw").focus();
+  $("#lockForm").onsubmit = async e => {
+    e.preventDefault();
+    const pw = $("#l-pw").value;
+    const { status, data } = await api("POST", { action:"view", id, password: pw });
+    if (status !== 200) return $("#l-msg").textContent = data.error || "비밀번호가 맞지 않아요.";
+    pwCache[id] = pw; showPost(id);
+  };
+}
+
+/* ---------- 주소(#)로 화면 고르기 ---------- */
+function route(){
+  if (!/^https?:$/.test(location.protocol))
+    return notice("게시판은 서버에서 열어야 해요.", "이 폴더에서 node server.js 를 실행하고 http://localhost:3000/board.html 로 열어 주세요.");
+  const h = location.hash;
+  if (h === "#write") return showWrite();
+  const m = h.match(/^#post-(\d+)$/);
+  if (m) return showPost(Number(m[1]));
+  return showList(page);
+}
+document.addEventListener("click", e => {
+  const g = e.target.closest("[data-go]"); if (g){ e.preventDefault(); return go(g.dataset.go); }
+  const p = e.target.closest("[data-page]"); if (p){ showList(Number(p.dataset.page)); window.scrollTo(0, 0); }
+});
+window.addEventListener("hashchange", route);
+route();
+</script>
+</body>
+</html>

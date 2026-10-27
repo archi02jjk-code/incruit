@@ -1,5 +1,5 @@
 // 실제 API 응답 형식 샘플로 변환 로직을 확인합니다.  실행: npm test
-// mpm_list.xml / alio_list.json 은 2026-10 실제 응답 형식을 담은 샘플입니다.
+// test/ 의 xml·json 은 2026-10 실제 응답 형식을 담은 샘플입니다.
 const fs = require("fs");
 const path = require("path");
 const assert = require("assert");
@@ -34,20 +34,6 @@ t("나라일터 실제 응답(2026-10-27): 빈 접수시작일, 안내 글 걸�
 
 t("나라일터 키 오류를 알아듣는다", () => {
   assert.throws(() => S.parseMpmXml(read("datagokr_key_error.xml")), /SERVICE_KEY_IS_NOT_REGISTERED/);
-});
-
-t("잡알리오 JSON을 공고로 바꾼다", () => {
-  const { items, total } = S.parseAlioJson(read("alio_list.json"));
-  assert.equal(total, 3);
-  const j = S.alioToJob(items[1]);
-  assert.equal(j.org, "한국청소년상담복지개발원");
-  assert.equal(j.posted, "2026-10-12"); assert.equal(j.deadline, "2026-10-27");
-  assert.deepEqual(j.regions, ["부산"]);
-  assert.equal(j.career, "신입+경력"); assert.equal(j.headcount, 3);
-  assert.equal(j.url, "https://job.alio.go.kr/recruitview.do?idx=305902");
-  assert.throws(() => S.parseAlioJson('{"resultCode":500,"resultMsg":"fail"}'), /500/);
-  // 2026-10-27 실제 응답: 활용신청 전 키
-  assert.throws(() => S.parseAlioJson('{"OpenAPI_ServiceResponse":{"cmmMsgHeader":{"errMsg":"SERVICE_KEY_IS_NOT_REGISTERED_ERROR","returnAuthMsg":"등록되지 않은 서비스키","returnReasonCode":"30"}}}'), /활용신청/);
 });
 
 t("경기데이터드림 응답 틀과 필드 자동 매칭", () => {
@@ -105,7 +91,7 @@ t("키는 로그에 남기지 않는다", () => {
 
 (async () => {
   const out = await S.collectAll({ env: {}, from: "2026-10-13", to: "2026-10-27" });
-  assert.equal(out.sources.length, 4);
+  assert.equal(out.sources.length, 3);
   assert.ok(out.sources.every(s => s.status === "no-key"));
   assert.equal(out.jobs.length, 0);
   passed++; console.log("  ✓ 키가 없으면 채널별로 '키 없음'을 돌려준다");

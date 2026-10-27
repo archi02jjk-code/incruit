@@ -26,6 +26,9 @@
   .brand-mark{width:26px;height:26px;border-radius:50%;border:2.5px solid var(--seal);display:grid;place-items:center;color:var(--seal);font-size:.7rem;font-weight:800;transform:rotate(-8deg)}
   .brand small{font-weight:500;color:var(--muted);font-size:.9rem}
   .today{color:var(--muted);font-size:.9rem;white-space:nowrap}
+  .nav{display:flex;gap:4px}
+  .nav a{text-decoration:none;padding:6px 12px;border-radius:999px;font-weight:600;font-size:.93rem;color:var(--muted)}
+  .nav a[aria-current="page"]{background:var(--ink);color:#fff}
   @media (max-width:560px){.brand small{display:none}}
 
   .brief{padding:38px 0 20px}
@@ -34,7 +37,7 @@
   .brief p{margin:10px 0 0;color:var(--muted);max-width:48em}
 
   /* 데이터 출처 상태 */
-  .feeds{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:20px}
+  .feeds{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:20px}
   @media (max-width:900px){.feeds{grid-template-columns:repeat(2,1fr)}}
   .feed{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-s);padding:9px 12px;font-size:.84rem;min-width:0}
   .feed b{display:block;font-size:.92rem}
@@ -162,7 +165,10 @@
 <header class="top">
   <div class="wrap">
     <div class="brand"><span class="brand-mark" aria-hidden="true">출</span>다시출근 <small>공공 채용공고 매칭 리포트</small></div>
-    <div class="today" id="todayLabel"></div>
+    <nav class="nav" aria-label="메뉴">
+      <a href="./" aria-current="page">맞춤 공고</a>
+      <a href="board.html">문의하기</a>
+    </nav>
   </div>
 </header>
 
@@ -248,7 +254,6 @@ const MOVE = ["대전","세종","충남","충북","강원","경북","경남","�
 const CAPITAL = ["서울","경기","인천"];
 const SOURCES = [
   {name:"나라일터", label:"인사혁신처 공공취업정보"},
-  {name:"잡알리오", label:"기재부 공공기관 채용정보"},
   {name:"잡아바", label:"경기도 내 공공일자리"},
   {name:"경기 민간채용", label:"경기도일자리재단 잡아바 채용정보"},
 ];
@@ -301,13 +306,13 @@ const SAMPLE_JOBS = [
   {id:"s6",  source:"나라일터", org:"누리초등학교", title:"2026학년도 방과후 컴퓨터 시간강사 채용 공고", regions:["경기"], posted:"2026-10-22", deadline:"2026-10-29"},
   {id:"s7",  source:"나라일터", org:"하늘군청", title:"충무계획 담당 비상대비 업무 임기제 채용", regions:["강원"], posted:"2026-10-21", deadline:"2026-11-02"},
   {id:"s26", source:"나라일터", org:"동녘특별시청", title:"정보보안 담당 임기제 공무원(6급 상당) 채용", regions:["서울"], posted:"2026-10-19", deadline:"2026-10-26"},
-  {id:"s8",  source:"잡알리오", org:"미래국방연구원", title:"국방정보화 사업관리 전문위원 채용", regions:["대전"], hireType:"비정규직", career:"경력", field:"정보통신", headcount:2, posted:"2026-10-20", deadline:"2026-11-03"},
-  {id:"s9",  source:"잡알리오", org:"한결도시공사", title:"제2026-12호 정보보안 팀장(경력직) 채용", regions:["서울"], hireType:"정규직", career:"경력", field:"정보통신", headcount:1, posted:"2026-10-22", deadline:"2026-11-07"},
-  {id:"s10", source:"잡알리오", org:"디지털행정진흥원", title:"정보화사업 PMO 전문위원 공개모집", regions:["세종"], hireType:"비정규직", career:"경력", field:"정보통신", headcount:3, posted:"2026-10-23", deadline:"2026-11-05"},
-  {id:"s11", source:"잡알리오", org:"새솔문화재단", title:"2026년 하반기 신입사원 공개채용", regions:["서울"], hireType:"정규직", career:"신입", field:"경영.회계.사무", posted:"2026-10-21", deadline:"2026-11-04"},
-  {id:"s12", source:"잡알리오", org:"바다항만공사", title:"해외사업 경력직 채용", regions:["부산"], hireType:"정규직", career:"경력", field:"경영.회계.사무", posted:"2026-10-24", deadline:"2026-11-10"},
-  {id:"s13", source:"잡알리오", org:"누리안전공단", title:"비상대비·안전관리 경력직 채용 (재공고)", regions:["서울"], hireType:"정규직", career:"경력", field:"건설", repost:true, posted:"2026-10-22", deadline:"2026-11-04"},
-  {id:"s14", source:"잡알리오", org:"방산협력진흥원", title:"방산 국제협력 사업관리 전문위원 (영어 능통자)", regions:["서울"], hireType:"비정규직", career:"경력", field:"경영.회계.사무", posted:"2026-10-26", deadline:"2026-11-09"},
+  {id:"s8",  source:"나라일터", org:"미래국방연구원", title:"국방정보화 사업관리 전문위원 채용", regions:["대전"], hireType:"비정규직", career:"경력", field:"정보통신", headcount:2, posted:"2026-10-20", deadline:"2026-11-03"},
+  {id:"s9",  source:"나라일터", org:"한결도시공사", title:"제2026-12호 정보보안 팀장(경력직) 채용", regions:["서울"], hireType:"정규직", career:"경력", field:"정보통신", headcount:1, posted:"2026-10-22", deadline:"2026-11-07"},
+  {id:"s10", source:"나라일터", org:"디지털행정진흥원", title:"정보화사업 PMO 전문위원 공개모집", regions:["세종"], hireType:"비정규직", career:"경력", field:"정보통신", headcount:3, posted:"2026-10-23", deadline:"2026-11-05"},
+  {id:"s11", source:"나라일터", org:"새솔문화재단", title:"2026년 하반기 신입사원 공개채용", regions:["서울"], hireType:"정규직", career:"신입", field:"경영.회계.사무", posted:"2026-10-21", deadline:"2026-11-04"},
+  {id:"s12", source:"나라일터", org:"바다항만공사", title:"해외사업 경력직 채용", regions:["부산"], hireType:"정규직", career:"경력", field:"경영.회계.사무", posted:"2026-10-24", deadline:"2026-11-10"},
+  {id:"s13", source:"나라일터", org:"누리안전공단", title:"비상대비·안전관리 경력직 채용 (재공고)", regions:["서울"], hireType:"정규직", career:"경력", field:"건설", repost:true, posted:"2026-10-22", deadline:"2026-11-04"},
+  {id:"s14", source:"나라일터", org:"방산협력진흥원", title:"방산 국제협력 사업관리 전문위원 (영어 능통자)", regions:["서울"], hireType:"비정규직", career:"경력", field:"경영.회계.사무", posted:"2026-10-26", deadline:"2026-11-09"},
   {id:"s15", source:"잡아바", org:"가람시청", title:"정보통신 분야 시간선택제 임기제 공무원 채용", regions:["경기"], area:"경기 가람시", posted:"2026-10-23", deadline:"2026-11-02"},
   {id:"s16", source:"잡아바", org:"경기새일재단", title:"중장년 일자리 사업운영 팀장 채용", regions:["경기"], area:"경기 수원시", posted:"2026-10-25", deadline:"2026-11-08"},
   {id:"s17", source:"잡아바", org:"동녘시청", title:"2026년 4단계 공공근로 사업 참여자 모집", regions:["경기"], posted:"2026-10-20", deadline:"2026-10-31"},
@@ -318,7 +323,7 @@ const SAMPLE_JOBS = [
   {id:"s22", source:"경기 민간채용", org:"(주)에이원테크", title:"방산 품질관리 책임", regions:["경기"], area:"경기 안양시", hireType:"정규직", career:"경력 7년 이상", salary:"면접 후 결정", posted:"2026-10-24", deadline:"2026-11-10"},
   // 조사 시작일 이전
   {id:"s23", source:"나라일터", org:"동녘특별시청", title:"비상대비담당관(개방형 5급) 채용 공고", regions:["서울"], posted:"2026-10-14", deadline:"2026-10-31"},
-  {id:"s24", source:"잡알리오", org:"한결도시공사", title:"정보화사업 PM(경력직) 채용", regions:["서울"], career:"경력", posted:"2026-10-12", deadline:"2026-11-02"},
+  {id:"s24", source:"나라일터", org:"한결도시공사", title:"정보화사업 PM(경력직) 채용", regions:["서울"], career:"경력", posted:"2026-10-12", deadline:"2026-11-02"},
   {id:"s25", source:"잡아바", org:"가람시청", title:"재난안전 상황실 운영 임기제 채용", regions:["경기"], posted:"2026-10-16", deadline:"2026-10-24"},
 ];
 
@@ -582,7 +587,6 @@ function renderIntro(counts){
 function render(){
   const counts = {};
   JOBS.forEach(j => counts[j.source] = (counts[j.source] || 0) + 1);
-  $("#todayLabel").textContent = `${md(TODAY)} ${WEEK[TODAY.getDay()]}요일`;
   $("#feeds").innerHTML = feedsHTML(counts);
   markDirty();
   if (!applied) return renderIntro(counts);
