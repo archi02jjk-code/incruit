@@ -1,0 +1,6 @@
+{
+  "regions": ["icn1"],
+  "functions": {
+    "api/jobs.js": { "maxDuration": 60 }
+  }
+}
