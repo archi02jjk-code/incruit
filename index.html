@@ -262,7 +262,7 @@
       <li><strong>희망 지역 (점수 없음)</strong>: 고른 지역의 공고만 남기고 나머지는 제외합니다. 근무지가 정해지지 않은 공고는 남겨 둡니다.</li>
       <li><strong>희망 연봉 (점수 없음)</strong>: 공고에 연봉이 적혀 있고 그 최고액이 희망 연봉보다 낮으면 제외합니다. 월급·시급은 연봉으로 바꿔 비교합니다(시급은 월 209시간 기준). 희망 연봉을 골랐는데 공고에 연봉이 없으면 점수가 높아도 <b>추천 대신 검토</b>로 둡니다.</li>
       <li><strong>어학</strong>: 공고명에 해외·국제·영어 같은 단어가 있는데 어학 수준이 '상급' 아래면 추천 대신 검토로 둡니다. 상급 이상이면 5점을 더합니다.</li>
-      <li>70점 이상 <strong>추천</strong>, 45~69점 <strong>검토</strong>, 그 아래나 마감된 공고는 <strong>제외</strong>합니다. 조사 기간은 최초 등록일로 판단합니다.</li>
+      <li>70점 이상 <strong>추천</strong>, 40~69점 <strong>검토</strong>, 그 아래나 마감된 공고는 <strong>제외</strong>합니다. 조사 기간은 최초 등록일로 판단합니다.</li>
     </ul>
     <p>공공 API는 공고명·기관·기간·지역 정도만 주기 때문에, 자격 요건과 연봉은 공고 원문에서 꼭 확인하세요.</p>
     <p id="sampleNote"><span class="flag">샘플 데이터</span> 파일을 바로 열면 연습용 가상 공고가 보입니다. <code>node server.js</code>로 실행하고 API 키를 넣으면 실제 공고로 바뀝니다.</p>
@@ -540,7 +540,7 @@ function evaluate(job){
   if (closed){ verdict = "제외"; out.unshift(`${md(dl)} 마감`); }
   else if (out.length) verdict = "제외";
   else if (score >= 70 && !langCap && salaryKind !== "unknown") verdict = "추천";
-  else if (score >= 45) verdict = "검토";
+  else if (score >= 40) verdict = "검토";
   else { verdict = "제외"; out.push(`적합도 낮음 (${score}점)`); }
 
   // 추천 이유 3줄
