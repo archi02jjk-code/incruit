@@ -256,7 +256,8 @@
     <ul>
       <li><strong>경력 연관 (최대 50점)</strong>: 공고명·직무분야에 내 핵심 역량(고른 분야와 직접 입력한 단어)이 하나 맞으면 35점, 둘 이상이면 50점. 하나도 없으면 제외합니다.</li>
       <li><strong>군 경력 강점 (15점)</strong>: 국방, 방산, 비상대비, 충무, 민방위, 예비역, 제대군인 같은 단어가 있으면 더합니다.</li>
-      <li><strong>직급 (최대 35점)</strong>: 팀장·센터장·전문위원·개방형·4~5급은 35점, 경력·임기제·전문경력관·6급은 25점, 공고명에 드러나지 않으면 15점, 7~9급·위촉·시간선택제는 10점. 신입·인턴·시간강사·공공근로는 제외합니다.</li>
+      <li><strong>직급 (최대 35점)</strong>: 공고명의 직급(4급, 팀장, 전문위원, 나급, 가군 등)을 6단계로 나누고 최종 계급에 맞는 단계와 비교합니다. 맞으면 35점, 한 단계 높으면 25점, 한 단계 낮으면 20점, 두 단계 이상 높으면 15점, 두 단계 이상 낮으면 5점, 직급이 안 보이면 15점. 신입·인턴·시간강사·공공근로는 제외합니다.
+        <br>계급별 맞는 직급: 준장 이상·대령 → 3~4급·국장·과장급 / 중령 → 4~5급·과장급·팀장급 / 소령 → 5~6급·팀장급·책임급 / 대위·준위·원사 → 6~8급·책임급 / 상사 → 7~9급. 흔히 쓰는 대략적 대응이며 공식 환산표가 아니에요.</li>
       <li><strong>희망 지역 (점수 없음)</strong>: 고른 지역의 공고만 남기고 나머지는 제외합니다. 근무지가 정해지지 않은 공고는 남겨 둡니다.</li>
       <li><strong>희망 연봉 (점수 없음)</strong>: 공고에 연봉이 적혀 있고 그 최고액이 희망 연봉보다 낮으면 제외합니다. 월급·시급은 연봉으로 바꿔 비교합니다(시급은 월 209시간 기준).</li>
       <li><strong>어학</strong>: 공고명에 해외·국제·영어 같은 단어가 있는데 어학 수준이 '상급' 아래면 추천 대신 검토로 둡니다. 상급 이상이면 5점을 더합니다.</li>
@@ -274,7 +275,6 @@
    1. 선택지와 사전
    ========================================================= */
 const RANKS = ["대령","중령","소령","대위","준장 이상","준위","원사","상사"];
-const FIELD_ORDER = ["준장 이상","대령","중령","소령"];   // 영관급 이상
 const LANG_LEVELS = ["없음","기초","중급","상급","원어민 수준"];
 const REGIONS = ["서울","경기","인천","대전","세종","충남","충북","강원","부산","대구","광주","울산","경북","경남","전북","전남","제주"];
 const SALARY_OPTIONS = [["0","미고려"],["4000","4천만 원 이상"],["5000","5천만 원 이상"],["6000","6천만 원 이상"],["7000","7천만 원 이상"]];
@@ -301,10 +301,38 @@ const FIELD_DICT = {
 const VET_WORDS   = ["제대군인","예비역","전역","국방","군 경력","군경력","비상대비","충무","민방위","예비군","방산","방위"];
 const ENTRY_WORDS = ["청년인턴","인턴","체험형","시간강사","방과후","공공근로","아르바이트","기간제 교사","기간제교사","대체교사","돌봄","신입",
                      "조리원","조리사","배식","미화","청소","안전요원","운전원","경비원","실무사"];
-const LOW_GRADE   = ["7급","8급","9급"];
-const HIGH_WORDS  = ["팀장","센터장","본부장","실장","단장","처장","부장","국장","과장급","과장","담당급","공모직위","전문위원","수석","개방형","4급","5급","관리자","담당관"];
-const MID_WORDS   = ["경력","임기제","전문경력관","전문관","책임","6급","선임","전문직"];
-const LOW_WORDS   = ["위촉","보조","시간선택제"];
+// ---------- 공고 직급 단계 (6이 가장 높음) ----------
+//   6 국장·3급 이상 / 5 4급·과장급 / 4 5급·팀장급 / 3 6급·책임급 / 2 7~8급 / 1 9급·보조
+const TIER_LABEL = {6:"국장·3급 이상", 5:"4급·과장급", 4:"5급·팀장급", 3:"6급·책임급", 2:"7~8급", 1:"9급·보조"};
+const TIER_WORDS = {
+  6: ["국장","본부장","처장","원장","부원장","이사"],
+  5: ["과장급","과장","센터장","실장","단장","부장","개방형","공모직위","담당관"],
+  4: ["팀장","전문위원","수석","담당급"],
+  3: ["책임","전문경력관","전문관","선임"],
+  1: ["위촉","보조","시간선택제"],
+};
+// 최종 계급별로 '맞는' 공고 직급 단계 [아래, 위]  ※ 흔히 쓰는 대략적 대응이며 공식 환산표가 아님
+const RANK_RANGE = {
+  "준장 이상":[5,6], "대령":[5,6], "중령":[4,5], "소령":[3,4],
+  "대위":[2,3], "준위":[2,3], "원사":[2,3], "상사":[1,2],
+};
+// 공고명에서 직급 단계 읽기: 숫자 급(4급) → 시간선택제 가~마급 → 전문경력관 가~다군 → 직위 단어
+function jobTier(title, extra){
+  const t = String(title || "");
+  const g = t.match(/([1-9])\s*급/);
+  if (g){ const n = +g[1]; return { tier: n <= 3 ? 6 : n === 4 ? 5 : n === 5 ? 4 : n === 6 ? 3 : n <= 8 ? 2 : 1, word: `${n}급` }; }
+  const ga = t.match(/(가|나|다|라|마)급/);            // 시간선택제임기제 가급(5급 상당) … 마급(9급 상당)
+  if (ga) return { tier: {가:4, 나:3, 다:2, 라:2, 마:1}[ga[1]], word: `${ga[1]}급` };
+  const gun = /전문경력관/.test(t) && t.match(/(가|나|다)군/); // 전문경력관 가군(4~5급) … 다군(8~9급)
+  if (gun) return { tier: {가:4, 나:3, 다:2}[gun[1]], word: `전문경력관 ${gun[1]}군` };
+  for (const tier of [6, 5, 4, 3]){
+    const w = findWords(t + " " + (extra || ""), TIER_WORDS[tier]);
+    if (w.length) return { tier, word: w[0] };
+  }
+  const low = findWords(t, TIER_WORDS[1]);
+  if (low.length) return { tier: 1, word: low[0] };
+  return { tier: null, word: findWords(t + " " + (extra || ""), ["경력","임기제"])[0] || "" };
+}
 const LANG_WORDS  = ["영어","외국어","해외","국제","글로벌","통번역","수출","어학"];
 
 const weekAgo = (() => { const d = new Date(); d.setDate(d.getDate() - 7); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; })();
@@ -442,14 +470,24 @@ function evaluate(job){
   // 직급
   const careerIsEntry = job.career === "신입";
   const entry = findWords(titleField, ENTRY_WORDS).filter(w => !(w === "신입" && /경력/.test(titleField)));
-  let level = "unknown", levelWord = "";
+  // level: entry(신입 등) / unknown(직급 안 보임) / fit(계급에 맞음) / low1 / low2(많이 낮음) / high1(도전) / high2(많이 높음)
+  //        계급을 입력하지 않았으면 예전처럼 공고 직급만으로: top(5급 이상) / mid(6급) / bottom(7급 이하)
+  let level = "unknown", levelWord = "", tier = null;
+  const range = RANK_RANGE[P.rank];
   if (entry.length || careerIsEntry){ level = "entry"; levelWord = entry[0] || "신입"; }
-  else if (findWords(job.title, LOW_GRADE).length){ level = "low"; levelWord = findWords(job.title, LOW_GRADE)[0]; }
-  else if (findWords(titleField, HIGH_WORDS).length){ level = "high"; levelWord = findWords(titleField, HIGH_WORDS)[0]; }
-  else if (findWords(job.title, LOW_WORDS).length){ level = "low"; levelWord = findWords(job.title, LOW_WORDS)[0]; }
-  else if (findWords(titleField, MID_WORDS).length){ level = "mid"; levelWord = findWords(titleField, MID_WORDS)[0]; }
+  else {
+    const jt = jobTier(job.title, job.career);
+    tier = jt.tier; levelWord = jt.word;
+    if (tier == null) level = "unknown";
+    else if (!range) level = tier >= 4 ? "top" : tier === 3 ? "mid" : "bottom";
+    else if (tier >= range[0] && tier <= range[1]) level = "fit";
+    else if (tier === range[0] - 1) level = "low1";
+    else if (tier < range[0]) level = "low2";
+    else if (tier === range[1] + 1) level = "high1";
+    else level = "high2";
+  }
   if (level === "entry") out.push(`'${levelWord}' 공고라 경력직 프로필과 맞지 않음`);
-  score += {high:35, mid:25, low:10, unknown:15, entry:0}[level];
+  score += {fit:35, high1:25, low1:20, high2:15, low2:5, unknown:15, top:35, mid:25, bottom:10, entry:0}[level];
 
   // 지역
   const regions = job.regions || [];
@@ -497,13 +535,21 @@ function evaluate(job){
     ["경력", projectHit
       ? `${P.project} 경험이 '${terms}' 업무와 바로 이어져요.`
       : `${hitFields.join("·")} 경력이 공고의 '${terms}' 업무와 이어져요.`],
-    ["직급", {
-      high:`'${levelWord}' 자리라 ${P.rank ? P.rank + " 출신·" : ""}${yearsText} 수준에 맞아요.`,
-      mid:`'${levelWord}' 공고라 ${yearsText}을 경력으로 인정받기 좋아요.`,
-      low:`'${levelWord}' 자리라 ${P.rank || "군"} 경력에 비해 직급·처우가 낮을 수 있어요.`,
-      unknown:`공고명에 직급이 없어 공고문에서 직급·보수를 확인해야 해요.`,
-      entry:``,
-    }[level]],
+    ["직급", (() => {
+      const lv = tier ? `'${levelWord}'(${TIER_LABEL[tier]})` : `'${levelWord}'`;
+      return {
+        fit:   `${lv} 자리라 ${P.rank} 출신·${yearsText}에 맞는 직급이에요.`,
+        high1: `${lv} 자리라 ${P.rank} 경력에서 한 단계 높여 도전해 볼 만해요.`,
+        high2: `${lv} 자리라 ${P.rank} 경력보다 높아요. 자격 요건을 꼭 확인하세요.`,
+        low1:  `${lv} 자리라 ${P.rank} 경력보다 한 단계 낮아요.`,
+        low2:  `${lv} 자리라 ${P.rank} 경력에 비해 많이 낮아요.`,
+        top:   `${lv} 자리라 ${yearsText} 수준에 맞아요. (최종 계급을 넣으면 더 정확해요)`,
+        mid:   `${lv} 자리예요. (최종 계급을 넣으면 맞는 직급인지 따져 드려요)`,
+        bottom:`${lv} 자리라 직급·처우가 낮을 수 있어요.`,
+        unknown: levelWord ? `'${levelWord}' 공고지만 직급이 안 보여 공고문에서 확인해야 해요.` : `공고명에 직급이 없어 공고문에서 직급·보수를 확인해야 해요.`,
+        entry: ``,
+      }[level];
+    })()],
     ["조건", [
       {in:`근무지 ${regionName}(희망 지역)`, unknown:`근무지 미지정(공고문 확인)`, out:""}[regionKind],
       salaryKind === "ok" ? `보수 ${job.salary}(희망 연봉 이상)` : "",
@@ -566,15 +612,23 @@ function ddayHTML(e){
   return `<div class="d ${cls}">${n === 0 ? "오늘 마감" : "D-" + n}</div><div class="when">${md(e.dl)} 마감</div>`;
 }
 
+// 공고에 적힌 보수를 그대로 보여 주고, 월급·시급이면 연봉으로 바꾼 값을 덧붙인다
+function salaryText(raw){
+  const t = String(raw || "").trim().replace(/^연봉\s*/, "");          // 칸 이름이 '연봉'이라 앞의 '연봉'은 뺀다
+  if (!t) return "공고에 없음 (원문 확인)";
+  const y = annualMax(t);
+  const isYear = /만/.test(t) && !/월|시급|일급/.test(t);
+  return y != null && !isYear ? `${t} (연 약 ${y.toLocaleString()}만 원)` : t;
+}
 function cardHTML(e, idx){
   const j = e.job, isRec = e.verdict === "추천", sv = saved[j.id];
   const facts = [
     ["근무지", e.regionName],
+    ["연봉", salaryText(j.salary)],
     j.hireType && ["고용", j.hireType],
     j.career && ["채용구분", j.career],
     j.field && ["직무", j.field],
     j.headcount && ["인원", j.headcount + "명"],
-    j.salary && ["보수", j.salary],
     e.posted && ["등록", md(e.posted)],
   ].filter(Boolean);
   return `
@@ -719,7 +773,7 @@ function cardText(e, n){
   const j = e.job;
   return [
     `${n}. ${j.org} / ${j.title}${j.url ? " (" + j.url + ")" : ""}`,
-    `- 출처 ${j.source}, 근무지 ${e.regionName}${j.hireType ? ", " + j.hireType : ""}${j.salary ? ", 보수 " + j.salary : ""}, 마감 ${e.dl ? ymd(e.dl) : "없음"} (적합도 ${e.score}점)`,
+    `- 출처 ${j.source}, 근무지 ${e.regionName}, 연봉 ${salaryText(j.salary)}${j.hireType ? ", " + j.hireType : ""}, 마감 ${e.dl ? ymd(e.dl) : "없음"} (적합도 ${e.score}점)`,
     `- 추천 이유`,
     ...e.why.filter(w => w[1]).map(([k, v], i) => `  ${i + 1}) ${k}: ${v}`),
     ...(e.check ? [`- 확인할 점: ${e.check}`] : []),
