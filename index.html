@@ -734,7 +734,7 @@ function renderIntro(counts){
   const total = JOBS.length;
   $("#briefTitle").innerHTML = dataMode === "loading"
     ? "오늘의 공고를 불러오는 중이에요."
-    : `지금 공고 <b>${total}</b>건이 준비돼 있어요. 내 정보에 맞는 공고를 골라 드릴게요.`;
+    : `지금 채용공고 <b>${total}</b>건이 준비돼 있어요. 내 정보에 맞는 채용공고를 골라 드릴게요.`;
   $("#briefSub").textContent = dataMode === "sample" ? "지금은 연습용 샘플 공고예요." : dataMode === "live" ? "공공데이터 API에서 받은 실제 공고예요." : "";
   $("#jump").innerHTML = "";
   $("#report").innerHTML = `
@@ -770,7 +770,7 @@ function render(){
   scheduleContentCheck(inPeriod);
   if (dataMode === "loading"){ $("#briefTitle").textContent = "오늘의 공고를 불러오는 중이에요."; $("#briefSub").textContent = ""; $("#jump").innerHTML = ""; $("#report").innerHTML = ""; return; }
 
-  $("#briefTitle").innerHTML = `${md(start)}부터 오늘까지 새로 올라온 공고 <b>${inPeriod.length}</b>건 중 추천 <b>${rec.length}</b>건, 검토 <b>${cond.length}</b>건이에요.`;
+  $("#briefTitle").innerHTML = `${md(start)}부터 오늘까지 새로 올라온 채용공고 <b>${inPeriod.length}</b>건 중 추천 <b>${rec.length}</b>건, 검토 <b>${cond.length}</b>건이에요.`;
   const dis = P.discharge ? D(P.discharge) : null;
   const left = dis ? days(dis, TODAY) : null;
   const modeText = { sample:"지금은 연습용 샘플 공고예요.", live:"공공데이터 API에서 받은 실제 공고예요.", fallback:"API에 연결하지 못해 샘플 공고를 보여 주고 있어요." }[dataMode] || "";
