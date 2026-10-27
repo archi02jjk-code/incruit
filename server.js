@@ -19,6 +19,7 @@ if (fs.existsSync(envPath)) {
 
 const jobsHandler = require("./api/jobs");
 const boardHandler = require("./api/board");
+const detailHandler = require("./api/detail");
 const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json; charset=utf-8", ".png": "image/png", ".svg": "image/svg+xml", ".ico": "image/x-icon" };
 const PORT = Number(process.env.PORT || 3000);
 
@@ -26,6 +27,7 @@ http.createServer(async (req, res) => {
   const { pathname } = new URL(req.url, "http://localhost");
   if (pathname === "/api/jobs") return jobsHandler(req, res);
   if (pathname === "/api/board") return boardHandler(req, res);
+  if (pathname === "/api/detail") return detailHandler(req, res);
 
   // 정적 파일: 이 폴더 안의 공개 파일만 (.env, lib, api 등은 내보내지 않음)
   const rel = pathname === "/" ? "index.html" : decodeURIComponent(pathname).replace(/^\/+/, "");
