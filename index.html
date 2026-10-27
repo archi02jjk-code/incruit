@@ -69,13 +69,22 @@
   .chip span{display:inline-block;padding:4px 10px;border:1px solid var(--line);border-radius:999px;font-size:.86rem;cursor:pointer;background:var(--soft);user-select:none}
   .chip input:checked + span{background:var(--ink);border-color:var(--ink);color:#fff}
   .chip input:focus-visible + span{outline:3px solid #3B6FD8;outline-offset:2px}
-  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
   .inp,select{width:100%;padding:7px 10px;border:1px solid var(--line);border-radius:var(--radius-s);background:#fff}
   .unit{font-size:.78rem;color:var(--muted)}
   .fixed{display:flex;align-items:center;gap:8px;font-size:.9rem;background:var(--soft);border:1px solid var(--line);border-radius:var(--radius-s);padding:7px 10px;margin-bottom:8px}
   .fixed b{font-weight:700}
   .radio{display:flex;gap:8px;align-items:flex-start;font-size:.9rem;cursor:pointer;margin-bottom:4px}
   .radio input{margin-top:5px;accent-color:var(--ink)}
+  .go{display:block;width:100%;margin:6px 0 12px;padding:11px 14px;border:0;border-radius:var(--radius-s);background:var(--seal);color:#fff;font-weight:700;font-size:1rem;cursor:pointer}
+  .go:hover{filter:brightness(1.05)}
+  .go.dirty{box-shadow:0 0 0 3px #F3C9C5}
+  .req{color:var(--seal);font-weight:700;margin-left:2px}
+  .intro{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-m);padding:28px 26px}
+  .intro h2{margin:0 0 8px;font-size:1.2rem;letter-spacing:-0.03em}
+  .intro p{margin:0 0 12px;color:var(--muted)}
+  .intro ol{margin:0;padding-left:1.2em;color:var(--ink)}
+  .intro li{margin:4px 0}
   .reset{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:.85rem;padding:0}
 
   .section{margin-bottom:34px;scroll-margin-top:16px}
@@ -168,8 +177,8 @@
   <div class="layout">
     <details class="profile" id="profileBox" open>
       <summary>기본 프로필 <span class="hint">눌러서 열기/닫기</span></summary>
-      <form class="inner" id="form" onsubmit="return false">
-        <p class="sample">처음 값은 예시예요. 바꾸면 매칭이 바로 다시 계산됩니다.</p>
+      <form class="inner" id="form" novalidate>
+        <p class="sample">내 정보를 입력하고 아래 <b>맞춤 공고 보기</b>를 누르면 결과가 나와요. <span class="req">*</span> 표시는 꼭 골라 주세요.</p>
 
         <fieldset class="row2">
           <label><span class="field-label">최종 계급</span><select id="rank"></select></label>
@@ -181,10 +190,9 @@
         <fieldset>
           <label><span class="field-label">주요 사업 규모·역할</span><input class="inp" type="text" id="project" placeholder="예: 국방정보화사업 150억, 사업관리 담당"></label>
         </fieldset>
-        <fieldset><legend>핵심 경력 분야</legend><div class="chips" id="fieldChips"></div></fieldset>
-        <fieldset class="row2">
+        <fieldset><legend>핵심 경력 분야<span class="req">*</span></legend><div class="chips" id="fieldChips"></div></fieldset>
+        <fieldset>
           <label><span class="field-label">어학 수준</span><select id="lang"></select></label>
-          <label><span class="field-label">시험·점수</span><input class="inp" type="text" id="langScore" placeholder="예: TOEIC 780"></label>
         </fieldset>
         <fieldset>
           <legend>희망 지역</legend>
@@ -204,7 +212,8 @@
         </fieldset>
         <fieldset><legend>채용공고 출처</legend><div class="chips" id="srcChips"></div></fieldset>
 
-        <button type="button" class="reset" id="resetBtn">예시 값으로 되돌리기</button>
+        <button type="submit" class="go" id="goBtn">맞춤 공고 보기</button>
+        <button type="button" class="reset" id="resetBtn">입력 내용 모두 지우기</button>
       </form>
     </details>
 
@@ -250,7 +259,7 @@ const FIELD_DICT = {
   "사업관리":      ["사업관리","PMO","PM","사업운영","사업 운영","사업단","프로젝트"],
   "국방정보화":    ["정보화","전산","정보시스템","정보통신","디지털","ICT","SI","데이터"],
   "정보보안":      ["보안","정보보호","사이버","개인정보","관제"],
-  "비상대비·안전": ["비상대비","충무","민방위","재난","안전관리","예비군","안전"],
+  "비상대비·안전": ["비상대비","충무","민방위","재난","안전관리","예비군","위기관리"],
   "획득·조달":     ["조달","구매","계약","획득","방위사업","방산"],
   "군수·물류":     ["군수","물류","장비","정비","품질"],
   "교육훈련":      ["교육훈련","훈련","연수","교육운영"],
@@ -258,20 +267,22 @@ const FIELD_DICT = {
   "시설":          ["시설","건축","전기","설비"],
 };
 const VET_WORDS   = ["제대군인","예비역","전역","국방","군 경력","군경력","비상대비","충무","민방위","예비군","방산","방위"];
-const ENTRY_WORDS = ["청년인턴","인턴","체험형","시간강사","방과후","공공근로","아르바이트","기간제 교사","기간제교사","대체교사","돌봄","신입"];
+const ENTRY_WORDS = ["청년인턴","인턴","체험형","시간강사","방과후","공공근로","아르바이트","기간제 교사","기간제교사","대체교사","돌봄","신입",
+                     "조리원","조리사","배식","미화","청소","안전요원","운전원","경비원","실무사"];
 const LOW_GRADE   = ["7급","8급","9급"];
-const HIGH_WORDS  = ["팀장","센터장","본부장","실장","단장","처장","부장","전문위원","수석","개방형","4급","5급","관리자","담당관"];
+const HIGH_WORDS  = ["팀장","센터장","본부장","실장","단장","처장","부장","국장","과장급","과장","담당급","공모직위","전문위원","수석","개방형","4급","5급","관리자","담당관"];
 const MID_WORDS   = ["경력","임기제","전문경력관","전문관","책임","6급","선임","전문직"];
 const LOW_WORDS   = ["위촉","보조","시간선택제"];
 const LANG_WORDS  = ["영어","외국어","해외","국제","글로벌","통번역","수출","어학"];
 
+const weekAgo = (() => { const d = new Date(); d.setDate(d.getDate() - 7); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; })();
 const DEFAULT_PROFILE = {
-  rank:"중령", discharge:"2027-02-28", years:22,
-  project:"국방정보화사업 150억, 사업관리 담당",
-  fields:["사업관리","국방정보화","정보보안","비상대비·안전"],
-  lang:"중급", langScore:"TOEIC 780",
-  movable:["대전","세종"],
-  start:"2026-10-19", beforeMode:"ref",
+  rank:"", discharge:"", years:"",
+  project:"",
+  fields:[],
+  lang:"",
+  movable:[],
+  start:weekAgo, beforeMode:"ref",
   sources:SOURCES.map(s => s.name),
 };
 
@@ -335,8 +346,9 @@ const store = {
   get(k, f){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : f; }catch(e){ return f; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 };
-let profile = Object.assign(structuredClone(DEFAULT_PROFILE), store.get("dasi3.profile", {}));
-let saved = store.get("dasi3.saved", {});
+let profile = Object.assign(structuredClone(DEFAULT_PROFILE), store.get("dasi4.profile", {}));   // 왼쪽 입력 중인 값
+let applied = store.get("dasi4.applied", null);   // '맞춤 공고 보기'를 누른 순간의 값 (결과는 이것으로 계산)
+let saved = store.get("dasi4.saved", {});
 
 // 데이터 상태
 let JOBS = SAMPLE_JOBS;
@@ -347,7 +359,8 @@ let feedStatus = null;             // /api/jobs 의 sources
    4. 매칭
    ========================================================= */
 function evaluate(job){
-  const P = profile;
+  const P = applied;
+  const yearsText = P.years ? `군 경력 ${P.years}년` : "군 경력";
   const text = [job.title, job.field, job.prefer].filter(Boolean).join(" ");   // 기관명은 매칭에 쓰지 않음
   const titleField = [job.title, job.field, job.career].filter(Boolean).join(" ");
   const out = [];                  // 제외 사유
@@ -417,22 +430,22 @@ function evaluate(job){
       ? `${P.project} 경험이 '${terms}' 업무와 바로 이어져요.`
       : `${hitFields.join("·")} 경력이 공고의 '${terms}' 업무와 이어져요.`],
     ["직급", {
-      high:`'${levelWord}' 자리라 ${P.rank} 출신·군 경력 ${P.years}년 수준에 맞아요.`,
-      mid:`'${levelWord}' 공고라 군 경력 ${P.years}년을 경력으로 인정받기 좋아요.`,
-      low:`'${levelWord}' 자리라 ${P.rank} 경력에 비해 직급·처우가 낮을 수 있어요.`,
+      high:`'${levelWord}' 자리라 ${P.rank ? P.rank + " 출신·" : ""}${yearsText} 수준에 맞아요.`,
+      mid:`'${levelWord}' 공고라 ${yearsText}을 경력으로 인정받기 좋아요.`,
+      low:`'${levelWord}' 자리라 ${P.rank || "군"} 경력에 비해 직급·처우가 낮을 수 있어요.`,
       unknown:`공고명에 직급이 없어 공고문에서 직급·보수를 확인해야 해요.`,
       entry:``,
     }[level]],
     ["조건", [
       {capital:`근무지 ${regionName}(수도권 우선 지역)`, movable:`근무지 ${regionName}(이주 가능 지역)`, unknown:`근무지 미지정(전국 또는 공고문 확인)`, out:""}[regionKind],
       vet.length ? `'${vet[0]}' 관련이라 군 경력이 강점이에요.` : "",
-      langNeed.length && langIdx >= 3 ? `어학(${P.langScore || P.lang})이 강점이에요.` : "",
+      langNeed.length && langIdx >= 3 ? `어학(${P.lang})이 강점이에요.` : "",
     ].filter(Boolean).join(", ")],
   ];
 
   // 확인할 점 (한 줄)
   const checks = [];
-  if (langCap) checks.push(`'${langNeed[0]}' 관련 공고라 어학 요건을 확인하세요 (현재 ${P.lang}${P.langScore ? ", " + P.langScore : ""}).`);
+  if (langCap) checks.push(`'${langNeed[0]}' 관련 공고라 어학 요건을 확인하세요 (현재 어학 수준: ${P.lang || "미입력"}).`);
   if (job.repost) checks.push("재공고예요. 최초 공고일과 지난 공고 상황을 확인하세요.");
   if (/임기제/.test(job.title)) checks.push("임기제라 임기와 연장 조건을 확인하세요.");
   if (regionKind === "unknown") checks.push("근무지가 정해지지 않은 공고예요.");
@@ -451,9 +464,9 @@ function chips(el, options, key){
   el.innerHTML = options.map(o => `<label class="chip"><input type="checkbox" data-key="${key}" value="${esc(o)}" ${profile[key].includes(o) ? "checked" : ""}><span>${esc(o)}</span></label>`).join("");
 }
 function fillForm(){
-  $("#rank").innerHTML = RANKS.map(r => `<option ${r === profile.rank ? "selected" : ""}>${r}</option>`).join("");
-  $("#lang").innerHTML = LANG_LEVELS.map(l => `<option ${l === profile.lang ? "selected" : ""}>${l}</option>`).join("");
-  ["discharge","years","project","langScore","start"].forEach(id => $("#" + id).value = profile[id]);
+  $("#rank").innerHTML = `<option value="">선택하세요</option>` + RANKS.map(r => `<option ${r === profile.rank ? "selected" : ""}>${r}</option>`).join("");
+  $("#lang").innerHTML = `<option value="">선택하세요</option>` + LANG_LEVELS.map(l => `<option ${l === profile.lang ? "selected" : ""}>${l}</option>`).join("");
+  ["discharge","years","project","start"].forEach(id => $("#" + id).value = profile[id]);
   document.querySelectorAll('input[name="beforeMode"]').forEach(r => r.checked = r.value === profile.beforeMode);
   chips($("#fieldChips"), Object.keys(FIELD_DICT), "fields");
   chips($("#moveChips"), MOVE, "movable");
@@ -470,7 +483,7 @@ function feedsHTML(counts){
       else if (f.status === "no-key"){ cls = ""; st = "키 없음"; msg = f.message; }
       else { cls = "err"; st = "오류"; msg = f.message; }
     }
-    const off = !profile.sources.includes(s.name);
+    const off = !(applied || profile).sources.includes(s.name);
     return `<div class="feed ${cls}" ${off ? 'style="opacity:.5"' : ""}><b>${s.name}</b><span class="st"><span class="dot"></span>${off ? "출처에서 뺌" : st}</span><span class="msg">${esc(msg || s.label)}</span></div>`;
   }).join("");
 }
@@ -539,26 +552,53 @@ function beforeTable(list){
 }
 
 let last = null;
+function markDirty(){
+  const dirty = applied && JSON.stringify(profile) !== JSON.stringify(applied);
+  $("#goBtn").classList.toggle("dirty", !!dirty);
+  $("#goBtn").textContent = dirty ? "바뀐 조건으로 다시 보기" : "맞춤 공고 보기";
+}
+function renderIntro(counts){
+  const total = JOBS.length;
+  $("#briefTitle").innerHTML = dataMode === "loading"
+    ? "오늘의 공고를 불러오는 중이에요."
+    : `지금 공고 <b>${total}</b>건이 준비돼 있어요. 내 정보에 맞는 공고를 골라 드릴게요.`;
+  $("#briefSub").textContent = dataMode === "sample" ? "지금은 연습용 샘플 공고예요." : dataMode === "live" ? "공공데이터 API에서 받은 실제 공고예요." : "";
+  $("#jump").innerHTML = "";
+  $("#report").innerHTML = `
+    <div class="intro">
+      <h2>왼쪽에 내 정보를 입력해 주세요</h2>
+      <p>입력한 정보로 공고마다 추천·검토·제외를 판정하고, 추천 이유를 3줄로 보여 드려요.</p>
+      <ol>
+        <li>최종 계급, 전역 예정일, 군 경력을 입력하세요.</li>
+        <li>주요 사업 규모·역할을 적고, <b>핵심 경력 분야</b>를 하나 이상 고르세요.</li>
+        <li>어학 수준과 이주 가능 지역을 고르세요. 수도권은 항상 우선으로 봐요.</li>
+        <li><b>맞춤 공고 보기</b>를 누르세요.</li>
+      </ol>
+    </div>`;
+  $("#sampleNote").style.display = dataMode === "live" ? "none" : "";
+}
 function render(){
-  const start = D(profile.start);
   const counts = {};
   JOBS.forEach(j => counts[j.source] = (counts[j.source] || 0) + 1);
-  const pool = JOBS.filter(j => profile.sources.includes(j.source)).map(evaluate);
+  $("#todayLabel").textContent = `${md(TODAY)} ${WEEK[TODAY.getDay()]}요일`;
+  $("#feeds").innerHTML = feedsHTML(counts);
+  markDirty();
+  if (!applied) return renderIntro(counts);
+  const P = applied;
+  const start = D(P.start);
+  const pool = JOBS.filter(j => P.sources.includes(j.source)).map(evaluate);
   const inPeriod = pool.filter(e => !e.posted || (e.posted >= start && e.posted <= TODAY));
   const before = pool.filter(e => e.posted && e.posted < start).sort((a, b) => b.posted - a.posted);
   const byDl = (a, b) => (a.dl || Infinity) - (b.dl || Infinity) || b.score - a.score;
   const rec = inPeriod.filter(e => e.verdict === "추천").sort(byDl);
   const cond = inPeriod.filter(e => e.verdict === "검토").sort(byDl);
   const excl = inPeriod.filter(e => e.verdict === "제외");
-  const showBefore = profile.beforeMode === "ref";
+  const showBefore = P.beforeMode === "ref";
   last = {rec, cond, excl, before, start};
-
-  $("#todayLabel").textContent = `${md(TODAY)} ${WEEK[TODAY.getDay()]}요일`;
-  $("#feeds").innerHTML = feedsHTML(counts);
-  if (dataMode === "loading"){ $("#report").innerHTML = ""; return; }
+  if (dataMode === "loading"){ $("#briefTitle").textContent = "오늘의 공고를 불러오는 중이에요."; $("#briefSub").textContent = ""; $("#jump").innerHTML = ""; $("#report").innerHTML = ""; return; }
 
   $("#briefTitle").innerHTML = `${md(start)}부터 오늘까지 새로 올라온 공고 <b>${inPeriod.length}</b>건 중 추천 <b>${rec.length}</b>건, 검토 <b>${cond.length}</b>건이에요.`;
-  const dis = profile.discharge ? D(profile.discharge) : null;
+  const dis = P.discharge ? D(P.discharge) : null;
   const left = dis ? days(dis, TODAY) : null;
   const modeText = { sample:"지금은 연습용 샘플 공고예요.", live:"공공데이터 API에서 받은 실제 공고예요.", fallback:"API에 연결하지 못해 샘플 공고를 보여 주고 있어요." }[dataMode] || "";
   $("#briefSub").textContent = `${modeText} ` + (left != null && left > 0
@@ -613,12 +653,12 @@ function cardText(e, n){
   ].join("\n");
 }
 function buildText(){
-  const {rec, cond, excl, before, start} = last, P = profile;
+  const {rec, cond, excl, before, start} = last, P = applied;
   const o = [];
   o.push("[공공 채용공고 매칭 리포트]");
   o.push(`조사 기간: ${ymd(start)} ~ ${ymd(TODAY)} (등록일 기준), 출처: ${P.sources.join(", ")}`);
-  o.push(`기본 프로필: 최종 계급 ${P.rank} / 전역 예정일 ${P.discharge ? ymd(D(P.discharge)) : "-"} / 군 경력 ${P.years}년`);
-  o.push(`주요 사업 규모·역할: ${P.project} / 어학: ${P.lang}${P.langScore ? " (" + P.langScore + ")" : ""}`);
+  o.push(`기본 프로필: 최종 계급 ${P.rank || "-"} / 전역 예정일 ${P.discharge ? ymd(D(P.discharge)) : "-"} / 군 경력 ${P.years ? P.years + "년" : "-"}`);
+  o.push(`주요 사업 규모·역할: ${P.project || "-"} / 핵심 경력 분야: ${P.fields.join(", ")} / 어학 수준: ${P.lang || "-"}`);
   o.push(`희망 지역: 수도권 우선 / 이주 가능: ${P.movable.join(", ") || "없음"}`);
   o.push("", `■ 추천 공고 (${rec.length}건)`);
   rec.forEach((e, i) => o.push(cardText(e, i + 1), ""));
@@ -653,7 +693,7 @@ function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add
 let loadedFrom = null;
 async function loadLive(){
   if (!/^https?:$/.test(location.protocol)) return;          // 파일로 열면 샘플 그대로
-  const s = D(profile.start); s.setDate(s.getDate() - 14);    // 이전 공고 참고용으로 2주 더
+  const s = D((applied || profile).start); s.setDate(s.getDate() - 14);    // 이전 공고 참고용으로 2주 더
   const from = isoDay(s);
   if (loadedFrom === from) return;
   loadedFrom = from;
@@ -672,7 +712,7 @@ async function loadLive(){
 /* =========================================================
    8. 이벤트
    ========================================================= */
-function persist(){ store.set("dasi3.profile", profile); render(); }
+function persist(){ store.set("dasi4.profile", profile); markDirty(); }
 $("#form").addEventListener("change", e => {
   const t = e.target;
   if (t.dataset.key){
@@ -680,12 +720,26 @@ $("#form").addEventListener("change", e => {
     profile[k] = [...document.querySelectorAll(`input[data-key="${k}"]:checked`)].map(i => i.value);
   } else if (t.name === "beforeMode") profile.beforeMode = t.value;
   else if (t.id === "years") profile.years = Math.max(0, Number(t.value) || 0);
-  else if (t.id === "start"){ if (!t.value){ t.value = profile.start; return; } profile.start = t.value; persist(); return loadLive(); }
+  else if (t.id === "start"){ if (!t.value){ t.value = profile.start; return; } profile.start = t.value; }
   else if (t.id) profile[t.id] = t.value;
   persist();
 });
-["project","langScore"].forEach(id => $("#" + id).addEventListener("input", e => { profile[id] = e.target.value; persist(); }));
-$("#resetBtn").addEventListener("click", () => { profile = structuredClone(DEFAULT_PROFILE); fillForm(); persist(); loadLive(); });
+$("#project").addEventListener("input", e => { profile.project = e.target.value; persist(); });
+$("#form").addEventListener("submit", e => {
+  e.preventDefault();
+  if (!profile.fields.length){ toast("핵심 경력 분야를 하나 이상 골라 주세요."); $("#fieldChips").scrollIntoView({block:"center"}); return; }
+  if (!profile.sources.length){ toast("채용공고 출처를 하나 이상 골라 주세요."); return; }
+  applied = structuredClone(profile);
+  store.set("dasi4.applied", applied);
+  firstPaint = true; showAllExcl = false;
+  render(); loadLive();
+  if (window.matchMedia("(max-width:900px)").matches){ $("#profileBox").open = false; $(".brief").scrollIntoView({behavior:"smooth"}); }
+});
+$("#resetBtn").addEventListener("click", () => {
+  profile = structuredClone(DEFAULT_PROFILE); applied = null;
+  store.set("dasi4.profile", profile); store.set("dasi4.applied", null);
+  fillForm(); render();
+});
 
 document.addEventListener("click", e => {
   const el = e.target.closest("[data-act]"); if (!el) return;
@@ -696,17 +750,17 @@ document.addEventListener("click", e => {
   if (act === "save"){
     const id = el.closest(".card").dataset.id;
     saved[id] ? delete saved[id] : saved[id] = {status:"관심", savedAt:Date.now()};
-    store.set("dasi3.saved", saved); render();
+    store.set("dasi4.saved", saved); render();
   }
 });
 $("#report").addEventListener("change", e => {
   if (e.target.dataset.act !== "status") return;
   const id = e.target.closest(".card").dataset.id;
-  saved[id].status = e.target.value; store.set("dasi3.saved", saved);
+  saved[id].status = e.target.value; store.set("dasi4.saved", saved);
   toast(`지원 단계를 '${e.target.value}'(으)로 바꿨어요.`);
 });
 
-if (window.matchMedia("(max-width:900px)").matches) $("#profileBox").open = false;
+if (applied && window.matchMedia("(max-width:900px)").matches) $("#profileBox").open = false;   // 처음엔 입력창을 펼쳐 둔다
 fillForm();
 render();
 loadLive();
