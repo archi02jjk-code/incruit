@@ -77,6 +77,9 @@
   .unit{font-size:.78rem;color:var(--muted)}
   .fixed{display:flex;align-items:center;gap:8px;font-size:.9rem;background:var(--soft);border:1px solid var(--line);border-radius:var(--radius-s);padding:7px 10px;margin-bottom:8px}
   .fixed b{font-weight:700}
+  .kw{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-top:8px}
+  .quick{display:flex;gap:10px;margin:0 0 8px}
+  .quick button{background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:.82rem}
   .radio{display:flex;gap:8px;align-items:flex-start;font-size:.9rem;cursor:pointer;margin-bottom:4px}
   .radio input{margin-top:5px;accent-color:var(--ink)}
   .go{display:block;width:100%;margin:6px 0 12px;padding:11px 14px;border:0;border-radius:var(--radius-s);background:var(--seal);color:#fff;font-weight:700;font-size:1rem;cursor:pointer}
@@ -196,15 +199,28 @@
         <fieldset>
           <label><span class="field-label">주요 사업 규모·역할</span><input class="inp" type="text" id="project" placeholder="예: 국방정보화사업 150억, 사업관리 담당"></label>
         </fieldset>
-        <fieldset><legend>핵심 경력 분야<span class="req">*</span></legend><div class="chips" id="fieldChips"></div></fieldset>
+        <fieldset>
+          <legend>핵심 역량<span class="req">*</span></legend>
+          <div class="chips" id="fieldChips"></div>
+          <span class="field-label" style="font-weight:600;margin-top:10px">직접 입력 (최대 2개)</span>
+          <div class="kw">
+            <input class="inp" type="text" id="kw1" maxlength="20" placeholder="예: 드론">
+            <input class="inp" type="text" id="kw2" maxlength="20" placeholder="예: 통신공사">
+          </div>
+          <div class="unit" style="margin-top:4px">공고명·직무에 이 단어가 있으면 내 역량과 맞는 공고로 봐요.</div>
+        </fieldset>
         <fieldset>
           <label><span class="field-label">어학 수준</span><select id="lang"></select></label>
         </fieldset>
         <fieldset>
-          <legend>희망 지역</legend>
-          <div class="fixed"><b>수도권 우선</b><span class="unit">서울·경기·인천</span></div>
-          <span class="field-label" style="font-weight:600">이주 가능</span>
-          <div class="chips" id="moveChips"></div>
+          <label><span class="field-label">희망 연봉</span><select id="salary"></select></label>
+          <div class="unit" style="margin-top:4px">연봉이 적힌 공고 중 희망보다 낮은 공고는 빠져요. 연봉이 없는 공고는 남겨 둬요.</div>
+        </fieldset>
+        <fieldset>
+          <legend>희망 지역<span class="req">*</span></legend>
+          <div class="quick"><button type="button" data-region="capital">수도권만</button><button type="button" data-region="all">전체 선택</button><button type="button" data-region="none">모두 해제</button></div>
+          <div class="chips" id="regionChips"></div>
+          <div class="unit" style="margin-top:6px">고르지 않은 지역의 공고는 빠져요.</div>
         </fieldset>
 
         <div class="group-title">조사 범위</div>
@@ -229,10 +245,11 @@
   <section class="rules">
     <h2>매칭 기준</h2>
     <ul>
-      <li><strong>경력 연관 (최대 35점)</strong>: 공고명·직무분야에 내 핵심 경력 분야의 단어가 하나면 25점, 두 분야 이상이면 35점. 하나도 없으면 제외합니다.</li>
+      <li><strong>경력 연관 (최대 50점)</strong>: 공고명·직무분야에 내 핵심 역량(고른 분야와 직접 입력한 단어)이 하나 맞으면 35점, 둘 이상이면 50점. 하나도 없으면 제외합니다.</li>
       <li><strong>군 경력 강점 (15점)</strong>: 국방, 방산, 비상대비, 충무, 민방위, 예비역, 제대군인 같은 단어가 있으면 더합니다.</li>
-      <li><strong>직급 (최대 30점)</strong>: 팀장·센터장·전문위원·개방형·4~5급은 30점, 경력·임기제·전문경력관·6급은 20점, 7~9급·위촉·시간선택제는 5점, 공고명에 드러나지 않으면 10점. 신입·인턴·시간강사·공공근로는 제외합니다.</li>
-      <li><strong>지역 (최대 20점)</strong>: 수도권 20점, 이주 가능 지역 12점, 근무지 미지정 10점. 그 밖의 지역은 제외합니다.</li>
+      <li><strong>직급 (최대 35점)</strong>: 팀장·센터장·전문위원·개방형·4~5급은 35점, 경력·임기제·전문경력관·6급은 25점, 공고명에 드러나지 않으면 15점, 7~9급·위촉·시간선택제는 10점. 신입·인턴·시간강사·공공근로는 제외합니다.</li>
+      <li><strong>희망 지역 (점수 없음)</strong>: 고른 지역의 공고만 남기고 나머지는 제외합니다. 근무지가 정해지지 않은 공고는 남겨 둡니다.</li>
+      <li><strong>희망 연봉 (점수 없음)</strong>: 공고에 연봉이 적혀 있고 그 최고액이 희망 연봉보다 낮으면 제외합니다. 월급·시급은 연봉으로 바꿔 비교합니다(시급은 월 209시간 기준).</li>
       <li><strong>어학</strong>: 공고명에 해외·국제·영어 같은 단어가 있는데 어학 수준이 '상급' 아래면 추천 대신 검토로 둡니다. 상급 이상이면 5점을 더합니다.</li>
       <li>70점 이상 <strong>추천</strong>, 45~69점 <strong>검토</strong>, 그 아래나 마감된 공고는 <strong>제외</strong>합니다. 조사 기간은 최초 등록일로 판단합니다.</li>
     </ul>
@@ -250,7 +267,8 @@
 const RANKS = ["대령","중령","소령","대위","준장 이상","준위","원사","상사"];
 const FIELD_ORDER = ["준장 이상","대령","중령","소령"];   // 영관급 이상
 const LANG_LEVELS = ["없음","기초","중급","상급","원어민 수준"];
-const MOVE = ["대전","세종","충남","충북","강원","경북","경남","전북","전남","부산","대구","광주","울산","제주"];
+const REGIONS = ["서울","경기","인천","대전","세종","충남","충북","강원","부산","대구","광주","울산","경북","경남","전북","전남","제주"];
+const SALARY_OPTIONS = [["0","미고려"],["4000","4천만 원 이상"],["5000","5천만 원 이상"],["7000","7천만 원 이상"]];
 const CAPITAL = ["서울","경기","인천"];
 const SOURCES = [
   {name:"나라일터", label:"인사혁신처 공공취업정보"},
@@ -285,8 +303,10 @@ const DEFAULT_PROFILE = {
   rank:"", discharge:"", years:"",
   project:"",
   fields:[],
+  keywords:["",""],
   lang:"",
-  movable:[],
+  salary:"0",
+  regions:[],
   start:weekAgo, beforeMode:"ref",
   sources:SOURCES.map(s => s.name),
 };
@@ -351,8 +371,16 @@ const store = {
   get(k, f){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : f; }catch(e){ return f; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 };
-let profile = Object.assign(structuredClone(DEFAULT_PROFILE), store.get("dasi4.profile", {}));   // 왼쪽 입력 중인 값
-let applied = store.get("dasi4.applied", null);   // '맞춤 공고 보기'를 누른 순간의 값 (결과는 이것으로 계산)
+function migrate(p){
+  if (!p) return p;
+  if (!Array.isArray(p.regions)) p.regions = Array.isArray(p.movable) ? [...CAPITAL, ...p.movable] : [];
+  delete p.movable;
+  if (!Array.isArray(p.keywords)) p.keywords = ["",""];
+  if (p.salary == null) p.salary = "0";
+  return p;
+}
+let profile = Object.assign(structuredClone(DEFAULT_PROFILE), migrate(store.get("dasi4.profile", {})));   // 왼쪽 입력 중인 값
+let applied = migrate(store.get("dasi4.applied", null));   // '맞춤 공고 보기'를 누른 순간의 값 (결과는 이것으로 계산)
 let saved = store.get("dasi4.saved", {});
 
 // 데이터 상태
@@ -363,6 +391,21 @@ let feedStatus = null;             // /api/jobs 의 sources
 /* =========================================================
    4. 매칭
    ========================================================= */
+// 공고의 보수 글자에서 '연봉 최고액(만 원)'을 읽는다. 못 읽으면 null
+//   "연봉 3400만원 ~ 3800만원" → 3800, "2500 ~ 3000 만원" → 3000, "월급 220만원 ~ 230만원" → 2760,
+//   "시급 10320원" → 약 2588 (월 209시간), "회사 내규에 따름" → null
+function annualMax(text){
+  const t = String(text || "").replace(/,/g, "");
+  if (!/\d/.test(t)) return null;
+  const nums = [...t.matchAll(/(\d+(?:\.\d+)?)/g)].map(m => Number(m[1]));
+  const max = Math.max(...nums);
+  if (/시급/.test(t)) return Math.round(max * 209 * 12 / 10000);
+  if (/일급/.test(t)) return Math.round(max * 22 * 12 / 10000);
+  if (/월급|월\s*\d|월 /.test(t)) return /만/.test(t) ? max * 12 : Math.round(max * 12 / 10000);
+  if (/만/.test(t)) return max;                         // 연봉 ○만원
+  if (max >= 1000000) return Math.round(max / 10000);   // 원 단위 연봉
+  return null;
+}
 function evaluate(job){
   const P = applied;
   const yearsText = P.years ? `군 경력 ${P.years}년` : "군 경력";
@@ -378,8 +421,11 @@ function evaluate(job){
     const w = findWords(job.title, dict).concat(findWords(text, dict));   // 공고명에 있는 단어를 먼저
     if (w.length){ hitFields.push(f); hitTerms.push(w[0]); }
   }
-  if (!hitFields.length) out.push("내 핵심 경력 분야와 관련된 직무가 아님");
-  score += hitFields.length >= 2 ? 35 : hitFields.length ? 25 : 0;
+  for (const k of (P.keywords || []).map(x => x.trim()).filter(Boolean)){    // 직접 입력한 역량 단어
+    if (findWords(text, [k]).length && !hitTerms.includes(k)){ hitFields.push(k); hitTerms.push(k); }
+  }
+  if (!hitFields.length) out.push("내 핵심 역량과 관련된 직무가 아님");
+  score += hitFields.length >= 2 ? 50 : hitFields.length ? 35 : 0;
 
   const vet = findWords(text + " " + job.org, VET_WORDS);   // 군 관련 기관명은 강점 신호로 봄
   if (vet.length) score += 15;
@@ -394,18 +440,26 @@ function evaluate(job){
   else if (findWords(job.title, LOW_WORDS).length){ level = "low"; levelWord = findWords(job.title, LOW_WORDS)[0]; }
   else if (findWords(titleField, MID_WORDS).length){ level = "mid"; levelWord = findWords(titleField, MID_WORDS)[0]; }
   if (level === "entry") out.push(`'${levelWord}' 공고라 경력직 프로필과 맞지 않음`);
-  score += {high:30, mid:20, low:5, unknown:10, entry:0}[level];
+  score += {high:35, mid:25, low:10, unknown:15, entry:0}[level];
 
   // 지역
   const regions = job.regions || [];
   const regionName = job.area || regions.join(", ") || "미지정";
-  let regionKind;
+  let regionKind;                                            // 점수 없이 걸러내기만 한다
   if (!regions.length) regionKind = "unknown";
-  else if (regions.some(r => CAPITAL.includes(r))) regionKind = "capital";
-  else if (regions.some(r => P.movable.includes(r))) regionKind = "movable";
+  else if (regions.some(r => P.regions.includes(r))) regionKind = "in";
   else regionKind = "out";
-  if (regionKind === "out") out.push(`근무지 ${regionName}: 수도권·이주 가능 지역 밖`);
-  score += {capital:20, movable:12, unknown:10, out:0}[regionKind];
+  if (regionKind === "out") out.push(`근무지 ${regionName}: 희망 지역이 아님`);
+
+  // 연봉 (점수 없이 걸러내기만)
+  const wantSalary = Number(P.salary) || 0;
+  const salMax = annualMax(job.salary);
+  let salaryKind = "none";
+  if (wantSalary){
+    if (salMax == null) salaryKind = "unknown";
+    else if (salMax >= wantSalary) salaryKind = "ok";
+    else { salaryKind = "low"; out.push(`보수 '${job.salary}': 희망 연봉(${wantSalary.toLocaleString()}만 원 이상)보다 낮음`); }
+  }
 
   // 어학
   const langIdx = LANG_LEVELS.indexOf(P.lang);
@@ -442,7 +496,8 @@ function evaluate(job){
       entry:``,
     }[level]],
     ["조건", [
-      {capital:`근무지 ${regionName}(수도권 우선 지역)`, movable:`근무지 ${regionName}(이주 가능 지역)`, unknown:`근무지 미지정(전국 또는 공고문 확인)`, out:""}[regionKind],
+      {in:`근무지 ${regionName}(희망 지역)`, unknown:`근무지 미지정(공고문 확인)`, out:""}[regionKind],
+      salaryKind === "ok" ? `보수 ${job.salary}(희망 연봉 이상)` : "",
       vet.length ? `'${vet[0]}' 관련이라 군 경력이 강점이에요.` : "",
       langNeed.length && langIdx >= 3 ? `어학(${P.lang})이 강점이에요.` : "",
     ].filter(Boolean).join(", ")],
@@ -454,7 +509,8 @@ function evaluate(job){
   if (job.repost) checks.push("재공고예요. 최초 공고일과 지난 공고 상황을 확인하세요.");
   if (/임기제/.test(job.title)) checks.push("임기제라 임기와 연장 조건을 확인하세요.");
   if (regionKind === "unknown") checks.push("근무지가 정해지지 않은 공고예요.");
-  if (job.salary && !/\d/.test(job.salary)) checks.push(`보수는 '${job.salary}'로 나와 있어 면접 때 확인하세요.`);
+  if (job.salary && !/\d/.test(job.salary)) checks.push(`보수가 '${job.salary}'(이)라고만 나와 있어 면접 때 확인하세요.`);
+  else if (salaryKind === "unknown") checks.push("공고에 연봉이 없어 희망 연봉에 맞는지 공고문에서 확인하세요.");
 
   return { job, verdict, score, reasons: out, why, check: checks[0] || "", dl, posted: job.posted ? D(job.posted) : null, regionName, langCap };
 }
@@ -472,9 +528,11 @@ function fillForm(){
   $("#rank").innerHTML = `<option value="">선택하세요</option>` + RANKS.map(r => `<option ${r === profile.rank ? "selected" : ""}>${r}</option>`).join("");
   $("#lang").innerHTML = `<option value="">선택하세요</option>` + LANG_LEVELS.map(l => `<option ${l === profile.lang ? "selected" : ""}>${l}</option>`).join("");
   ["discharge","years","project","start"].forEach(id => $("#" + id).value = profile[id]);
+  $("#kw1").value = profile.keywords[0] || ""; $("#kw2").value = profile.keywords[1] || "";
+  $("#salary").innerHTML = SALARY_OPTIONS.map(([v, l]) => `<option value="${v}" ${String(profile.salary) === v ? "selected" : ""}>${l}</option>`).join("");
   document.querySelectorAll('input[name="beforeMode"]').forEach(r => r.checked = r.value === profile.beforeMode);
   chips($("#fieldChips"), Object.keys(FIELD_DICT), "fields");
-  chips($("#moveChips"), MOVE, "movable");
+  chips($("#regionChips"), REGIONS, "regions");
   chips($("#srcChips"), SOURCES.map(s => s.name), "sources");
 }
 
@@ -577,8 +635,8 @@ function renderIntro(counts){
       <p>입력한 정보로 공고마다 추천·검토·제외를 판정하고, 추천 이유를 3줄로 보여 드려요.</p>
       <ol>
         <li>최종 계급, 전역 예정일, 군 경력을 입력하세요.</li>
-        <li>주요 사업 규모·역할을 적고, <b>핵심 경력 분야</b>를 하나 이상 고르세요.</li>
-        <li>어학 수준과 이주 가능 지역을 고르세요. 수도권은 항상 우선으로 봐요.</li>
+        <li>주요 사업 규모·역할을 적고, <b>핵심 역량</b>을 고르거나 직접 입력하세요.</li>
+        <li>어학 수준, 희망 연봉, <b>희망 지역</b>을 고르세요. 고르지 않은 지역의 공고는 빠져요.</li>
         <li><b>맞춤 공고 보기</b>를 누르세요.</li>
       </ol>
     </div>`;
@@ -623,7 +681,7 @@ function render(){
     <section class="section" id="sec-rec">
       <h2>추천 공고 <b>${rec.length}건</b></h2>
       <p class="desc">경력 분야, 직급, 지역이 모두 맞는 공고예요. 마감이 가까운 순서입니다.</p>
-      <div class="stack">${rec.length ? rec.map(cardHTML).join("") : empty("추천할 공고가 없어요.", "핵심 경력 분야나 이주 가능 지역을 넓혀 보세요.")}</div>
+      <div class="stack">${rec.length ? rec.map(cardHTML).join("") : empty("추천할 공고가 없어요.", "핵심 역량이나 희망 지역을 넓혀 보세요.")}</div>
     </section>
     <section class="section" id="sec-cond">
       <h2>검토 공고 <b>${cond.length}건</b></h2>
@@ -664,8 +722,9 @@ function buildText(){
   o.push("[공공 채용공고 매칭 리포트]");
   o.push(`조사 기간: ${ymd(start)} ~ ${ymd(TODAY)} (등록일 기준), 출처: ${P.sources.join(", ")}`);
   o.push(`기본 프로필: 최종 계급 ${P.rank || "-"} / 전역 예정일 ${P.discharge ? ymd(D(P.discharge)) : "-"} / 군 경력 ${P.years ? P.years + "년" : "-"}`);
-  o.push(`주요 사업 규모·역할: ${P.project || "-"} / 핵심 경력 분야: ${P.fields.join(", ")} / 어학 수준: ${P.lang || "-"}`);
-  o.push(`희망 지역: 수도권 우선 / 이주 가능: ${P.movable.join(", ") || "없음"}`);
+  const kws = (P.keywords || []).map(x => x.trim()).filter(Boolean);
+  o.push(`주요 사업 규모·역할: ${P.project || "-"} / 핵심 역량: ${[...P.fields, ...kws].join(", ")} / 어학 수준: ${P.lang || "-"}`);
+  o.push(`희망 연봉: ${(SALARY_OPTIONS.find(x => x[0] === String(P.salary)) || SALARY_OPTIONS[0])[1]} / 희망 지역: ${P.regions.join(", ")}`);
   o.push("", `■ 추천 공고 (${rec.length}건)`);
   rec.forEach((e, i) => o.push(cardText(e, i + 1), ""));
   if (!rec.length) o.push("해당 없음", "");
@@ -726,14 +785,21 @@ $("#form").addEventListener("change", e => {
     profile[k] = [...document.querySelectorAll(`input[data-key="${k}"]:checked`)].map(i => i.value);
   } else if (t.name === "beforeMode") profile.beforeMode = t.value;
   else if (t.id === "years") profile.years = Math.max(0, Number(t.value) || 0);
+  else if (t.id === "kw1" || t.id === "kw2") return;          // input 이벤트에서 이미 저장
   else if (t.id === "start"){ if (!t.value){ t.value = profile.start; return; } profile.start = t.value; }
   else if (t.id) profile[t.id] = t.value;
   persist();
 });
 $("#project").addEventListener("input", e => { profile.project = e.target.value; persist(); });
+["kw1","kw2"].forEach((id, i) => $("#" + id).addEventListener("input", e => { profile.keywords[i] = e.target.value; persist(); }));
+document.querySelectorAll("[data-region]").forEach(b => b.addEventListener("click", () => {
+  profile.regions = { capital:[...CAPITAL], all:[...REGIONS], none:[] }[b.dataset.region];
+  chips($("#regionChips"), REGIONS, "regions"); persist();
+}));
 $("#form").addEventListener("submit", e => {
   e.preventDefault();
-  if (!profile.fields.length){ toast("핵심 경력 분야를 하나 이상 골라 주세요."); $("#fieldChips").scrollIntoView({block:"center"}); return; }
+  if (!profile.fields.length && !profile.keywords.some(k => k.trim())){ toast("핵심 역량을 하나 이상 고르거나 직접 입력해 주세요."); $("#fieldChips").scrollIntoView({block:"center"}); return; }
+  if (!profile.regions.length){ toast("희망 지역을 하나 이상 골라 주세요."); $("#regionChips").scrollIntoView({block:"center"}); return; }
   if (!profile.sources.length){ toast("채용공고 출처를 하나 이상 골라 주세요."); return; }
   applied = structuredClone(profile);
   store.set("dasi4.applied", applied);
