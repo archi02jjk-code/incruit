@@ -897,7 +897,7 @@ function scheduleContentCheck(pool){
 let loadedFrom = null;
 async function loadLive(){
   if (!/^https?:$/.test(location.protocol)) return;          // 파일로 열면 샘플 그대로
-  const s = D((applied || profile).start); s.setDate(s.getDate() - 14);    // 이전 공고 참고용으로 2주 더
+  const s = D((applied || profile).start); s.setDate(s.getDate() - 7);     // 이전 공고 참고용으로 1주 더
   const from = isoDay(s);
   if (loadedFrom === from) return;
   loadedFrom = from;
