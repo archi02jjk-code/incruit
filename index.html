@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>다시출근 · 공공 채용공고 매칭</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --bg:#EAF0F4; --surface:#FFFFFF; --ink:#17233A; --muted:#5D6A7C; --faint:#9AA5B4;
+    --line:#D2DBE4; --soft:#F4F7FA; --seal:#B4312A; --ok:#1E7556; --warn:#A65F00;
+    --radius-s:6px; --radius-m:10px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;font-size:16px;line-height:1.6;letter-spacing:-0.01em;word-break:keep-all}
+  button,input,select{font:inherit;color:inherit}
+  :focus-visible{outline:3px solid #3B6FD8;outline-offset:2px}
+  a{color:inherit}
+  .wrap{max-width:1160px;margin:0 auto;padding:0 20px}
+
+  header.top{border-bottom:1px solid var(--line);background:var(--surface)}
+  header.top .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;gap:12px}
+  .brand{font-weight:800;font-size:1.15rem;letter-spacing:-0.03em;display:flex;align-items:center;gap:10px}
+  .brand-mark{width:26px;height:26px;border-radius:50%;border:2.5px solid var(--seal);display:grid;place-items:center;color:var(--seal);font-size:.7rem;font-weight:800;transform:rotate(-8deg)}
+  .brand small{font-weight:500;color:var(--muted);font-size:.9rem}
+  .today{color:var(--muted);font-size:.9rem;white-space:nowrap}
+  @media (max-width:560px){.brand small{display:none}}
+
+  .brief{padding:38px 0 20px}
+  .brief h1{margin:0;font-size:clamp(1.5rem,3.3vw,2.3rem);line-height:1.35;font-weight:700;letter-spacing:-0.04em;max-width:24em}
+  .brief h1 b{font-weight:800;font-variant-numeric:tabular-nums}
+  .brief p{margin:10px 0 0;color:var(--muted);max-width:48em}
+
+  /* 데이터 출처 상태 */
+  .feeds{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:20px}
+  @media (max-width:900px){.feeds{grid-template-columns:repeat(2,1fr)}}
+  .feed{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-s);padding:9px 12px;font-size:.84rem;min-width:0}
+  .feed b{display:block;font-size:.92rem}
+  .feed .st{display:flex;align-items:center;gap:6px;color:var(--muted)}
+  .feed .dot{width:8px;height:8px;border-radius:50%;background:var(--faint);flex:none}
+  .feed.ok .dot{background:var(--ok)} .feed.err .dot{background:var(--seal)} .feed.sample .dot{background:#C9A24A}
+  .feed .msg{display:block;color:var(--muted);font-size:.78rem;overflow-wrap:anywhere}
+
+  .jump{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;align-items:center}
+  .jump a{display:inline-flex;align-items:baseline;gap:6px;text-decoration:none;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:600;font-size:.93rem}
+  .jump a b{font-variant-numeric:tabular-nums}
+  .jump a.rec{border-color:var(--seal);color:var(--seal)}
+  .jump .copy{margin-left:auto;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:999px;padding:6px 14px;font-weight:600;font-size:.93rem;cursor:pointer}
+  @media (max-width:620px){.jump .copy{margin-left:0}}
+
+  .layout{display:grid;grid-template-columns:300px 1fr;gap:28px;align-items:start;padding:8px 0 40px}
+  @media (max-width:900px){.layout{grid-template-columns:1fr}}
+
+  .profile{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-m);position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto}
+  .profile summary{list-style:none;cursor:pointer;padding:16px 18px 6px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+  .profile summary::-webkit-details-marker{display:none}
+  .profile summary .hint{font-weight:400;color:var(--muted);font-size:.85rem}
+  .profile .inner{padding:0 18px 18px}
+  .profile .sample{font-size:.82rem;color:var(--muted);margin:0 0 6px}
+  @media (min-width:901px){.profile summary{cursor:default;pointer-events:none}.profile summary .hint{display:none}}
+  @media (max-width:900px){.profile{position:static;max-height:none}.profile summary{padding-bottom:16px}}
+  .group-title{font-size:.8rem;font-weight:700;color:var(--muted);margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--line)}
+  fieldset{border:0;margin:0 0 14px;padding:0;min-width:0}
+  legend,.field-label{font-size:.85rem;font-weight:700;margin-bottom:6px;display:block;padding:0}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip input{position:absolute;opacity:0;pointer-events:none}
+  .chip span{display:inline-block;padding:4px 10px;border:1px solid var(--line);border-radius:999px;font-size:.86rem;cursor:pointer;background:var(--soft);user-select:none}
+  .chip input:checked + span{background:var(--ink);border-color:var(--ink);color:#fff}
+  .chip input:focus-visible + span{outline:3px solid #3B6FD8;outline-offset:2px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .inp,select{width:100%;padding:7px 10px;border:1px solid var(--line);border-radius:var(--radius-s);background:#fff}
+  .unit{font-size:.78rem;color:var(--muted)}
+  .fixed{display:flex;align-items:center;gap:8px;font-size:.9rem;background:var(--soft);border:1px solid var(--line);border-radius:var(--radius-s);padding:7px 10px;margin-bottom:8px}
+  .fixed b{font-weight:700}
+  .radio{display:flex;gap:8px;align-items:flex-start;font-size:.9rem;cursor:pointer;margin-bottom:4px}
+  .radio input{margin-top:5px;accent-color:var(--ink)}
+  .reset{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:.85rem;padding:0}
+
+  .section{margin-bottom:34px;scroll-margin-top:16px}
+  .section > h2{font-size:1.2rem;margin:0 0 4px;letter-spacing:-0.03em;display:flex;align-items:baseline;gap:8px}
+  .section > h2 b{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:600;font-size:1rem}
+  .section > .desc{margin:0 0 14px;color:var(--muted);font-size:.9rem}
+  .stack{display:flex;flex-direction:column;gap:12px}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-m);padding:20px 22px}
+  .card-head{display:grid;grid-template-columns:72px 1fr auto;gap:16px;align-items:start}
+  @media (max-width:620px){.card{padding:16px}.card-head{grid-template-columns:58px 1fr}.card-head .dl{grid-column:2;text-align:left!important}}
+  .stamp{width:68px;height:68px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2.5px solid currentColor;
+    box-shadow:inset 0 0 0 3px #fff, inset 0 0 0 4.5px currentColor;transform:rotate(-8deg);line-height:1.1}
+  .stamp b{font-weight:800;font-size:1rem;letter-spacing:-0.04em}
+  .stamp small{font-size:.66rem;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+  .stamp.rec{color:var(--seal)}
+  .stamp.cond{color:var(--ink);border-style:dashed;box-shadow:none}
+  @media (max-width:620px){.stamp{width:56px;height:56px}.stamp b{font-size:.88rem}}
+  .meta{font-size:.86rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+  .tag{border:1px solid var(--line);border-radius:4px;padding:0 6px;font-size:.78rem;color:var(--muted)}
+  .tag.src{border-color:#B9C7D6;color:var(--ink)}
+  .tag.repost{border-color:#E3C48A;background:#FFF6E2;color:#7A4B00}
+  .card h3{margin:2px 0 0;font-size:1.12rem;line-height:1.4;letter-spacing:-0.03em}
+  .card h3 a{text-decoration:none} .card h3 a:hover{text-decoration:underline}
+  .dl{text-align:right;white-space:nowrap}
+  .dl .d{font-weight:800;font-variant-numeric:tabular-nums}
+  .dl .d.urgent{color:var(--seal)} .dl .d.soon{color:var(--warn)}
+  .dl .when{font-size:.82rem;color:var(--muted)}
+
+  .facts{display:flex;flex-wrap:wrap;gap:4px 18px;margin:10px 0 0 88px;font-size:.9rem;color:var(--ink)}
+  .facts span{white-space:nowrap} .facts em{font-style:normal;color:var(--muted);margin-right:4px}
+  .why{margin:14px 0 0 88px;padding:12px 14px;background:var(--soft);border-radius:var(--radius-s)}
+  .why h4{margin:0 0 6px;font-size:.84rem;color:var(--muted)}
+  .why ol{margin:0;padding:0;list-style:none;counter-reset:w}
+  .why li{display:grid;grid-template-columns:44px 1fr;gap:6px;font-size:.94rem;margin:3px 0}
+  .why li b{font-size:.8rem;color:var(--muted);font-weight:700;padding-top:2px}
+  .check{margin:10px 0 0 88px;font-size:.88rem;color:var(--warn)}
+  .check::before{content:"확인할 점  ";font-weight:700;white-space:pre}
+  .card-foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0 0 88px;padding-top:12px;border-top:1px dashed var(--line)}
+  @media (max-width:620px){.facts,.why,.check,.card-foot{margin-left:0}}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:var(--radius-s);padding:5px 12px;font-size:.88rem;cursor:pointer;font-weight:600}
+  .btn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .status{width:auto;font-size:.86rem;padding:4px 8px}
+  .orig{font-size:.86rem;color:var(--muted);margin-left:auto}
+
+  .table{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-m);overflow:hidden}
+  .table table{width:100%;border-collapse:collapse;font-size:.92rem}
+  .table th{text-align:left;font-size:.8rem;color:var(--muted);font-weight:600;background:var(--soft);padding:9px 14px;border-bottom:1px solid var(--line)}
+  .table td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  .table tr:last-child td{border-bottom:0}
+  .table td .sub{display:block;color:var(--muted);font-size:.82rem}
+  .table ul{margin:0;padding-left:1.1em}
+  .would{font-weight:700;white-space:nowrap}
+  .would.rec{color:var(--seal)} .would.cond{color:var(--ink)} .would.excl{color:var(--faint)}
+  @media (max-width:620px){.table thead{display:none}.table tr{display:block;padding:10px 14px;border-bottom:1px solid var(--line)}.table tr:last-child{border-bottom:0}.table td{display:block;padding:2px 0;border:0}}
+  .empty{background:var(--surface);border:1px dashed var(--line);border-radius:var(--radius-m);padding:24px 22px;color:var(--muted)}
+  .empty strong{display:block;color:var(--ink);margin-bottom:4px}
+  .more{margin-top:10px;background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:.88rem;padding:0}
+
+  .rules{border-top:1px solid var(--line);padding:32px 0 56px;color:var(--muted);font-size:.92rem}
+  .rules h2{color:var(--ink);font-size:1.1rem;margin:0 0 10px}
+  .rules ul{margin:0 0 12px;padding-left:1.1em;max-width:54em}
+  .flag{display:inline-block;background:#FFF4DE;color:#7A4B00;border-radius:4px;padding:2px 8px;font-size:.8rem;font-weight:700}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:8px;font-size:.92rem;opacity:0;pointer-events:none;transition:opacity .2s;max-width:calc(100% - 32px)}
+  .toast.show{opacity:1}
+  @media (prefers-reduced-motion:no-preference){
+    .stamp.rec.first{animation:stamp .4s cubic-bezier(.2,1.6,.4,1) both}
+    @keyframes stamp{from{transform:rotate(-20deg) scale(1.4);opacity:0}to{transform:rotate(-8deg) scale(1);opacity:1}}
+  }
+  @media print{.profile,.jump .copy,.card-foot .btn,.card-foot select{display:none}.layout{grid-template-columns:1fr}body{background:#fff}.card,.table{break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">출</span>다시출근 <small>공공 채용공고 매칭 리포트</small></div>
+    <div class="today" id="todayLabel"></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="brief">
+    <h1 id="briefTitle">공고를 불러오는 중이에요.</h1>
+    <p id="briefSub"></p>
+    <div class="feeds" id="feeds" aria-label="채용공고 출처 상태"></div>
+    <nav class="jump" id="jump" aria-label="리포트 바로가기"></nav>
+  </section>
+
+  <div class="layout">
+    <details class="profile" id="profileBox" open>
+      <summary>기본 프로필 <span class="hint">눌러서 열기/닫기</span></summary>
+      <form class="inner" id="form" onsubmit="return false">
+        <p class="sample">처음 값은 예시예요. 바꾸면 매칭이 바로 다시 계산됩니다.</p>
+
+        <fieldset class="row2">
+          <label><span class="field-label">최종 계급</span><select id="rank"></select></label>
+          <label><span class="field-label">전역 예정일</span><input class="inp" type="date" id="discharge"></label>
+        </fieldset>
+        <fieldset>
+          <label><span class="field-label">군 경력</span><input class="inp" type="number" min="0" max="45" id="years" style="width:50%"> <span class="unit">년</span></label>
+        </fieldset>
+        <fieldset>
+          <label><span class="field-label">주요 사업 규모·역할</span><input class="inp" type="text" id="project" placeholder="예: 국방정보화사업 150억, 사업관리 담당"></label>
+        </fieldset>
+        <fieldset><legend>핵심 경력 분야</legend><div class="chips" id="fieldChips"></div></fieldset>
+        <fieldset class="row2">
+          <label><span class="field-label">어학 수준</span><select id="lang"></select></label>
+          <label><span class="field-label">시험·점수</span><input class="inp" type="text" id="langScore" placeholder="예: TOEIC 780"></label>
+        </fieldset>
+        <fieldset>
+          <legend>희망 지역</legend>
+          <div class="fixed"><b>수도권 우선</b><span class="unit">서울·경기·인천</span></div>
+          <span class="field-label" style="font-weight:600">이주 가능</span>
+          <div class="chips" id="moveChips"></div>
+        </fieldset>
+
+        <div class="group-title">조사 범위</div>
+        <fieldset>
+          <label><span class="field-label">조사 시작일 (최초 등록일 기준)</span><input class="inp" type="date" id="start"></label>
+        </fieldset>
+        <fieldset>
+          <legend>시작일 이전 공고</legend>
+          <label class="radio"><input type="radio" name="beforeMode" value="ref"><span>별도 섹션에 참고로 표기</span></label>
+          <label class="radio"><input type="radio" name="beforeMode" value="hide"><span>리포트에 넣지 않음</span></label>
+        </fieldset>
+        <fieldset><legend>채용공고 출처</legend><div class="chips" id="srcChips"></div></fieldset>
+
+        <button type="button" class="reset" id="resetBtn">예시 값으로 되돌리기</button>
+      </form>
+    </details>
+
+    <div id="report"></div>
+  </div>
+
+  <section class="rules">
+    <h2>매칭 기준</h2>
+    <ul>
+      <li><strong>경력 연관 (최대 35점)</strong>: 공고명·직무분야에 내 핵심 경력 분야의 단어가 하나면 25점, 두 분야 이상이면 35점. 하나도 없으면 제외합니다.</li>
+      <li><strong>군 경력 강점 (15점)</strong>: 국방, 방산, 비상대비, 충무, 민방위, 예비역, 제대군인 같은 단어가 있으면 더합니다.</li>
+      <li><strong>직급 (최대 30점)</strong>: 팀장·센터장·전문위원·개방형·4~5급은 30점, 경력·임기제·전문경력관·6급은 20점, 7~9급·위촉·시간선택제는 5점, 공고명에 드러나지 않으면 10점. 신입·인턴·시간강사·공공근로는 제외합니다.</li>
+      <li><strong>지역 (최대 20점)</strong>: 수도권 20점, 이주 가능 지역 12점, 근무지 미지정 10점. 그 밖의 지역은 제외합니다.</li>
+      <li><strong>어학</strong>: 공고명에 해외·국제·영어 같은 단어가 있는데 어학 수준이 '상급' 아래면 추천 대신 검토로 둡니다. 상급 이상이면 5점을 더합니다.</li>
+      <li>70점 이상 <strong>추천</strong>, 45~69점 <strong>검토</strong>, 그 아래나 마감된 공고는 <strong>제외</strong>합니다. 조사 기간은 최초 등록일로 판단합니다.</li>
+    </ul>
+    <p>공공 API는 공고명·기관·기간·지역 정도만 주기 때문에, 자격 요건과 연봉은 공고 원문에서 꼭 확인하세요.</p>
+    <p id="sampleNote"><span class="flag">샘플 데이터</span> 파일을 바로 열면 연습용 가상 공고가 보입니다. <code>node server.js</code>로 실행하고 API 키를 넣으면 실제 공고로 바뀝니다.</p>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* =========================================================
+   1. 선택지와 사전
+   ========================================================= */
+const RANKS = ["대령","중령","소령","대위","준장 이상","준위","원사","상사"];
+const FIELD_ORDER = ["준장 이상","대령","중령","소령"];   // 영관급 이상
+const LANG_LEVELS = ["없음","기초","중급","상급","원어민 수준"];
+const MOVE = ["대전","세종","충남","충북","강원","경북","경남","전북","전남","부산","대구","광주","울산","제주"];
+const CAPITAL = ["서울","경기","인천"];
+const SOURCES = [
+  {name:"나라일터", label:"인사혁신처 공공취업정보"},
+  {name:"잡알리오", label:"기재부 공공기관 채용정보"},
+  {name:"잡아바", label:"경기도 내 공공일자리"},
+  {name:"경기 민간채용", label:"경기데이터드림 민간 채용정보"},
+];
+const STATUSES = ["관심","지원 완료","서류 합격","면접","최종 결과"];
+
+// 핵심 경력 분야 → 공고에서 찾을 단어
+const FIELD_DICT = {
+  "사업관리":      ["사업관리","PMO","PM","사업운영","사업 운영","사업단","프로젝트"],
+  "국방정보화":    ["정보화","전산","정보시스템","정보통신","디지털","ICT","SI","데이터"],
+  "정보보안":      ["보안","정보보호","사이버","개인정보","관제"],
+  "비상대비·안전": ["비상대비","충무","민방위","재난","안전관리","예비군","안전"],
+  "획득·조달":     ["조달","구매","계약","획득","방위사업","방산"],
+  "군수·물류":     ["군수","물류","장비","정비","품질"],
+  "교육훈련":      ["교육훈련","훈련","연수","교육운영"],
+  "행정·기획":     ["기획","행정","총무","인사","경영지원"],
+  "시설":          ["시설","건축","전기","설비"],
+};
+const VET_WORDS   = ["제대군인","예비역","전역","국방","군 경력","군경력","비상대비","충무","민방위","예비군","방산","방위"];
+const ENTRY_WORDS = ["청년인턴","인턴","체험형","시간강사","방과후","공공근로","아르바이트","기간제 교사","기간제교사","대체교사","돌봄","신입"];
+const LOW_GRADE   = ["7급","8급","9급"];
+const HIGH_WORDS  = ["팀장","센터장","본부장","실장","단장","처장","부장","전문위원","수석","개방형","4급","5급","관리자","담당관"];
+const MID_WORDS   = ["경력","임기제","전문경력관","전문관","책임","6급","선임","전문직"];
+const LOW_WORDS   = ["위촉","보조","시간선택제"];
+const LANG_WORDS  = ["영어","외국어","해외","국제","글로벌","통번역","수출","어학"];
+
+const DEFAULT_PROFILE = {
+  rank:"중령", discharge:"2027-02-28", years:22,
+  project:"국방정보화사업 150억, 사업관리 담당",
+  fields:["사업관리","국방정보화","정보보안","비상대비·안전"],
+  lang:"중급", langScore:"TOEIC 780",
+  movable:["대전","세종"],
+  start:"2026-10-19", beforeMode:"ref",
+  sources:SOURCES.map(s => s.name),
+};
+
+/* =========================================================
+   2. 연습용 샘플 공고 (가상)
+   ---------------------------------------------------------
+   server.js 로 실행하면 /api/jobs 의 실제 공고로 바뀝니다.
+   모양은 lib/sources.js 가 만드는 공고 한 건과 같습니다.
+   ========================================================= */
+const SAMPLE_JOBS = [
+  {id:"s1",  source:"나라일터", org:"가람시청", title:"비상대비 담당 임기제 공무원(6급 상당) 채용 공고", regions:["경기"], area:"경기 가람시", posted:"2026-10-21", deadline:"2026-11-04"},
+  {id:"s2",  source:"나라일터", org:"동녘특별시청", title:"정보화담당관(개방형 4급) 경력경쟁채용 공고", regions:["서울"], posted:"2026-10-22", deadline:"2026-11-05"},
+  {id:"s3",  source:"나라일터", org:"국가데이터보호처", title:"사이버보안 전문경력관(나군) 경력경쟁채용", regions:["세종"], posted:"2026-10-23", deadline:"2026-11-06"},
+  {id:"s4",  source:"나라일터", org:"한빛구청", title:"개인정보보호 담당 임기제 공무원(7급 상당) 채용", regions:["서울"], posted:"2026-10-24", deadline:"2026-11-03"},
+  {id:"s5",  source:"나라일터", org:"해솔부 해양연구소", title:"2026년 제3차 청년인턴 채용 공고", regions:["인천"], posted:"2026-10-20", deadline:"2026-10-30"},
+  {id:"s6",  source:"나라일터", org:"누리초등학교", title:"2026학년도 방과후 컴퓨터 시간강사 채용 공고", regions:["경기"], posted:"2026-10-22", deadline:"2026-10-29"},
+  {id:"s7",  source:"나라일터", org:"하늘군청", title:"충무계획 담당 비상대비 업무 임기제 채용", regions:["강원"], posted:"2026-10-21", deadline:"2026-11-02"},
+  {id:"s26", source:"나라일터", org:"동녘특별시청", title:"정보보안 담당 임기제 공무원(6급 상당) 채용", regions:["서울"], posted:"2026-10-19", deadline:"2026-10-26"},
+  {id:"s8",  source:"잡알리오", org:"미래국방연구원", title:"국방정보화 사업관리 전문위원 채용", regions:["대전"], hireType:"비정규직", career:"경력", field:"정보통신", headcount:2, posted:"2026-10-20", deadline:"2026-11-03"},
+  {id:"s9",  source:"잡알리오", org:"한결도시공사", title:"제2026-12호 정보보안 팀장(경력직) 채용", regions:["서울"], hireType:"정규직", career:"경력", field:"정보통신", headcount:1, posted:"2026-10-22", deadline:"2026-11-07"},
+  {id:"s10", source:"잡알리오", org:"디지털행정진흥원", title:"정보화사업 PMO 전문위원 공개모집", regions:["세종"], hireType:"비정규직", career:"경력", field:"정보통신", headcount:3, posted:"2026-10-23", deadline:"2026-11-05"},
+  {id:"s11", source:"잡알리오", org:"새솔문화재단", title:"2026년 하반기 신입사원 공개채용", regions:["서울"], hireType:"정규직", career:"신입", field:"경영.회계.사무", posted:"2026-10-21", deadline:"2026-11-04"},
+  {id:"s12", source:"잡알리오", org:"바다항만공사", title:"해외사업 경력직 채용", regions:["부산"], hireType:"정규직", career:"경력", field:"경영.회계.사무", posted:"2026-10-24", deadline:"2026-11-10"},
+  {id:"s13", source:"잡알리오", org:"누리안전공단", title:"비상대비·안전관리 경력직 채용 (재공고)", regions:["서울"], hireType:"정규직", career:"경력", field:"건설", repost:true, posted:"2026-10-22", deadline:"2026-11-04"},
+  {id:"s14", source:"잡알리오", org:"방산협력진흥원", title:"방산 국제협력 사업관리 전문위원 (영어 능통자)", regions:["서울"], hireType:"비정규직", career:"경력", field:"경영.회계.사무", posted:"2026-10-26", deadline:"2026-11-09"},
+  {id:"s15", source:"잡아바", org:"가람시청", title:"정보통신 분야 시간선택제 임기제 공무원 채용", regions:["경기"], area:"경기 가람시", posted:"2026-10-23", deadline:"2026-11-02"},
+  {id:"s16", source:"잡아바", org:"경기새일재단", title:"중장년 일자리 사업운영 팀장 채용", regions:["경기"], area:"경기 수원시", posted:"2026-10-25", deadline:"2026-11-08"},
+  {id:"s17", source:"잡아바", org:"동녘시청", title:"2026년 4단계 공공근로 사업 참여자 모집", regions:["경기"], posted:"2026-10-20", deadline:"2026-10-31"},
+  {id:"s18", source:"잡아바", org:"한빛시청", title:"민방위 강사 위촉 공고", regions:["경기"], posted:"2026-10-24", deadline:"2026-11-06"},
+  {id:"s19", source:"경기 민간채용", org:"(주)누리시스템즈", title:"국방 SI 사업 PM (팀장급)", regions:["경기"], area:"경기 성남시 분당구", hireType:"정규직", career:"경력 10년 이상", salary:"연봉 6,000만 원 이상", posted:"2026-10-21", deadline:"2026-11-12"},
+  {id:"s20", source:"경기 민간채용", org:"(주)다온시큐리티", title:"보안관제센터장", regions:["경기"], area:"경기 수원시 영통구", hireType:"정규직", career:"경력 12년 이상", salary:"회사 내규에 따름", posted:"2026-10-25", deadline:"2026-11-15"},
+  {id:"s21", source:"경기 민간채용", org:"(주)세진물류", title:"물류센터 경비원 모집", regions:["경기"], area:"경기 이천시", hireType:"계약직", career:"관계없음", salary:"월 250만 원", posted:"2026-10-22", deadline:"2026-11-05"},
+  {id:"s22", source:"경기 민간채용", org:"(주)에이원테크", title:"방산 품질관리 책임", regions:["경기"], area:"경기 안양시", hireType:"정규직", career:"경력 7년 이상", salary:"면접 후 결정", posted:"2026-10-24", deadline:"2026-11-10"},
+  // 조사 시작일 이전
+  {id:"s23", source:"나라일터", org:"동녘특별시청", title:"비상대비담당관(개방형 5급) 채용 공고", regions:["서울"], posted:"2026-10-14", deadline:"2026-10-31"},
+  {id:"s24", source:"잡알리오", org:"한결도시공사", title:"정보화사업 PM(경력직) 채용", regions:["서울"], career:"경력", posted:"2026-10-12", deadline:"2026-11-02"},
+  {id:"s25", source:"잡아바", org:"가람시청", title:"재난안전 상황실 운영 임기제 채용", regions:["경기"], posted:"2026-10-16", deadline:"2026-10-24"},
+];
+
+/* =========================================================
+   3. 도우미
+   ========================================================= */
+const D = s => { const [y,m,d] = String(s).split("-").map(Number); return new Date(y, m-1, d); };
+const TODAY = (() => { const t = new Date(); t.setHours(0,0,0,0); return t; })();
+const isoDay = dt => `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
+const days = (a, b) => Math.round((a - b) / 86400000);
+const md = dt => `${dt.getMonth()+1}월 ${dt.getDate()}일`;
+const ymd = dt => `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,"0")}.${String(dt.getDate()).padStart(2,"0")}`;
+const WEEK = ["일","월","화","수","목","금","토"];
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+// 영문 약어(PM, SI 등)는 단어 단위로, 한글은 포함 여부로 찾는다
+function findWords(text, words){
+  return words.filter(w => /^[A-Za-z]+$/.test(w)
+    ? new RegExp(`(^|[^A-Za-z])${w}([^A-Za-z]|$)`).test(text)
+    : text.includes(w));
+}
+
+const store = {
+  get(k, f){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : f; }catch(e){ return f; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+let profile = Object.assign(structuredClone(DEFAULT_PROFILE), store.get("dasi3.profile", {}));
+let saved = store.get("dasi3.saved", {});
+
+// 데이터 상태
+let JOBS = SAMPLE_JOBS;
+let dataMode = "sample";           // sample | loading | live | fallback
+let feedStatus = null;             // /api/jobs 의 sources
+
+/* =========================================================
+   4. 매칭
+   ========================================================= */
+function evaluate(job){
+  const P = profile;
+  const text = [job.title, job.field, job.prefer].filter(Boolean).join(" ");   // 기관명은 매칭에 쓰지 않음
+  const titleField = [job.title, job.field, job.career].filter(Boolean).join(" ");
+  const out = [];                  // 제외 사유
+  let score = 0;
+
+  // 경력 연관
+  const hitFields = [], hitTerms = [];
+  for (const f of P.fields){
+    const dict = FIELD_DICT[f] || [];
+    const w = findWords(job.title, dict).concat(findWords(text, dict));   // 공고명에 있는 단어를 먼저
+    if (w.length){ hitFields.push(f); hitTerms.push(w[0]); }
+  }
+  if (!hitFields.length) out.push("내 핵심 경력 분야와 관련된 직무가 아님");
+  score += hitFields.length >= 2 ? 35 : hitFields.length ? 25 : 0;
+
+  const vet = findWords(text + " " + job.org, VET_WORDS);   // 군 관련 기관명은 강점 신호로 봄
+  if (vet.length) score += 15;
+
+  // 직급
+  const careerIsEntry = job.career === "신입";
+  const entry = findWords(titleField, ENTRY_WORDS).filter(w => !(w === "신입" && /경력/.test(titleField)));
+  let level = "unknown", levelWord = "";
+  if (entry.length || careerIsEntry){ level = "entry"; levelWord = entry[0] || "신입"; }
+  else if (findWords(job.title, LOW_GRADE).length){ level = "low"; levelWord = findWords(job.title, LOW_GRADE)[0]; }
+  else if (findWords(titleField, HIGH_WORDS).length){ level = "high"; levelWord = findWords(titleField, HIGH_WORDS)[0]; }
+  else if (findWords(job.title, LOW_WORDS).length){ level = "low"; levelWord = findWords(job.title, LOW_WORDS)[0]; }
+  else if (findWords(titleField, MID_WORDS).length){ level = "mid"; levelWord = findWords(titleField, MID_WORDS)[0]; }
+  if (level === "entry") out.push(`'${levelWord}' 공고라 경력직 프로필과 맞지 않음`);
+  score += {high:30, mid:20, low:5, unknown:10, entry:0}[level];
+
+  // 지역
+  const regions = job.regions || [];
+  const regionName = job.area || regions.join(", ") || "미지정";
+  let regionKind;
+  if (!regions.length) regionKind = "unknown";
+  else if (regions.some(r => CAPITAL.includes(r))) regionKind = "capital";
+  else if (regions.some(r => P.movable.includes(r))) regionKind = "movable";
+  else regionKind = "out";
+  if (regionKind === "out") out.push(`근무지 ${regionName}: 수도권·이주 가능 지역 밖`);
+  score += {capital:20, movable:12, unknown:10, out:0}[regionKind];
+
+  // 어학
+  const langIdx = LANG_LEVELS.indexOf(P.lang);
+  const langNeed = findWords(job.title + " " + (job.prefer || ""), LANG_WORDS);
+  let langCap = false;
+  if (langNeed.length){ if (langIdx >= 3) score += 5; else langCap = true; }
+  score = Math.min(100, score);
+
+  // 마감
+  const dl = job.deadline ? D(job.deadline) : null;
+  const closed = dl && dl < TODAY;
+
+  let verdict;
+  if (closed){ verdict = "제외"; out.unshift(`${md(dl)} 마감`); }
+  else if (out.length) verdict = "제외";
+  else if (score >= 70 && !langCap) verdict = "추천";
+  else if (score >= 45) verdict = "검토";
+  else { verdict = "제외"; out.push(`적합도 낮음 (${score}점)`); }
+
+  // 추천 이유 3줄
+  // 주요 사업 설명에 맞은 분야나 단어가 들어 있으면 그 사업을 근거로, 아니면 경력 분야를 근거로 쓴다
+  const terms = [...new Set(hitTerms)].slice(0, 2).join("·");
+  const projectHit = P.project && hitFields.some((f, i) =>
+    f.split("·").some(part => P.project.includes(part.replace("국방", ""))) || P.project.includes(hitTerms[i]));
+  const why = [
+    ["경력", projectHit
+      ? `${P.project} 경험이 '${terms}' 업무와 바로 이어져요.`
+      : `${hitFields.join("·")} 경력이 공고의 '${terms}' 업무와 이어져요.`],
+    ["직급", {
+      high:`'${levelWord}' 자리라 ${P.rank} 출신·군 경력 ${P.years}년 수준에 맞아요.`,
+      mid:`'${levelWord}' 공고라 군 경력 ${P.years}년을 경력으로 인정받기 좋아요.`,
+      low:`'${levelWord}' 자리라 ${P.rank} 경력에 비해 직급·처우가 낮을 수 있어요.`,
+      unknown:`공고명에 직급이 없어 공고문에서 직급·보수를 확인해야 해요.`,
+      entry:``,
+    }[level]],
+    ["조건", [
+      {capital:`근무지 ${regionName}(수도권 우선 지역)`, movable:`근무지 ${regionName}(이주 가능 지역)`, unknown:`근무지 미지정(전국 또는 공고문 확인)`, out:""}[regionKind],
+      vet.length ? `'${vet[0]}' 관련이라 군 경력이 강점이에요.` : "",
+      langNeed.length && langIdx >= 3 ? `어학(${P.langScore || P.lang})이 강점이에요.` : "",
+    ].filter(Boolean).join(", ")],
+  ];
+
+  // 확인할 점 (한 줄)
+  const checks = [];
+  if (langCap) checks.push(`'${langNeed[0]}' 관련 공고라 어학 요건을 확인하세요 (현재 ${P.lang}${P.langScore ? ", " + P.langScore : ""}).`);
+  if (job.repost) checks.push("재공고예요. 최초 공고일과 지난 공고 상황을 확인하세요.");
+  if (/임기제/.test(job.title)) checks.push("임기제라 임기와 연장 조건을 확인하세요.");
+  if (regionKind === "unknown") checks.push("근무지가 정해지지 않은 공고예요.");
+  if (job.salary && !/\d/.test(job.salary)) checks.push(`보수는 '${job.salary}'로 나와 있어 면접 때 확인하세요.`);
+
+  return { job, verdict, score, reasons: out, why, check: checks[0] || "", dl, posted: job.posted ? D(job.posted) : null, regionName, langCap };
+}
+
+/* =========================================================
+   5. 화면
+   ========================================================= */
+let firstPaint = true;
+let showAllExcl = false;
+
+function chips(el, options, key){
+  el.innerHTML = options.map(o => `<label class="chip"><input type="checkbox" data-key="${key}" value="${esc(o)}" ${profile[key].includes(o) ? "checked" : ""}><span>${esc(o)}</span></label>`).join("");
+}
+function fillForm(){
+  $("#rank").innerHTML = RANKS.map(r => `<option ${r === profile.rank ? "selected" : ""}>${r}</option>`).join("");
+  $("#lang").innerHTML = LANG_LEVELS.map(l => `<option ${l === profile.lang ? "selected" : ""}>${l}</option>`).join("");
+  ["discharge","years","project","langScore","start"].forEach(id => $("#" + id).value = profile[id]);
+  document.querySelectorAll('input[name="beforeMode"]').forEach(r => r.checked = r.value === profile.beforeMode);
+  chips($("#fieldChips"), Object.keys(FIELD_DICT), "fields");
+  chips($("#moveChips"), MOVE, "movable");
+  chips($("#srcChips"), SOURCES.map(s => s.name), "sources");
+}
+
+function feedsHTML(counts){
+  return SOURCES.map(s => {
+    const f = feedStatus && feedStatus.find(x => x.name === s.name);
+    let cls = "sample", st = `샘플 ${counts[s.name] || 0}건`, msg = "";
+    if (dataMode === "loading"){ cls = ""; st = "불러오는 중"; }
+    else if (dataMode === "live" && f){
+      if (f.status === "ok"){ cls = "ok"; st = `연결됨, ${f.count}건`; }
+      else if (f.status === "no-key"){ cls = ""; st = "키 없음"; msg = f.message; }
+      else { cls = "err"; st = "오류"; msg = f.message; }
+    }
+    const off = !profile.sources.includes(s.name);
+    return `<div class="feed ${cls}" ${off ? 'style="opacity:.5"' : ""}><b>${s.name}</b><span class="st"><span class="dot"></span>${off ? "출처에서 뺌" : st}</span><span class="msg">${esc(msg || s.label)}</span></div>`;
+  }).join("");
+}
+
+function ddayHTML(e){
+  if (!e.dl) return `<div class="d">상시</div><div class="when">마감일 없음</div>`;
+  const n = days(e.dl, TODAY), cls = n <= 3 ? "urgent" : n <= 7 ? "soon" : "";
+  return `<div class="d ${cls}">${n === 0 ? "오늘 마감" : "D-" + n}</div><div class="when">${md(e.dl)} 마감</div>`;
+}
+
+function cardHTML(e, idx){
+  const j = e.job, isRec = e.verdict === "추천", sv = saved[j.id];
+  const facts = [
+    ["근무지", e.regionName],
+    j.hireType && ["고용", j.hireType],
+    j.career && ["채용구분", j.career],
+    j.field && ["직무", j.field],
+    j.headcount && ["인원", j.headcount + "명"],
+    j.salary && ["보수", j.salary],
+    e.posted && ["등록", md(e.posted)],
+  ].filter(Boolean);
+  return `
+  <article class="card" data-id="${esc(j.id)}">
+    <div class="card-head">
+      <div class="stamp ${isRec ? "rec" : "cond"} ${isRec && idx === 0 && firstPaint ? "first" : ""}" aria-label="${e.verdict}, 적합도 ${e.score}점"><b>${e.verdict}</b><small>${e.score}점</small></div>
+      <div>
+        <div class="meta">${esc(j.org)} <span class="tag src">${esc(j.source)}</span>${j.repost ? `<span class="tag repost">재공고</span>` : ""}</div>
+        <h3><a href="${j.url ? esc(j.url) : "#"}" ${j.url ? 'target="_blank" rel="noopener"' : 'data-act="origin"'}>${esc(j.title)}</a></h3>
+      </div>
+      <div class="dl">${ddayHTML(e)}</div>
+    </div>
+    <div class="facts">${facts.map(([k, v]) => `<span><em>${k}</em>${esc(v)}</span>`).join("")}</div>
+    <div class="why">
+      <h4>추천 이유</h4>
+      <ol>${e.why.filter(w => w[1]).map(([k, v]) => `<li><b>${k}</b><span>${esc(v)}</span></li>`).join("")}</ol>
+    </div>
+    ${e.check ? `<p class="check">${esc(e.check)}</p>` : ""}
+    <div class="card-foot">
+      <button class="btn ${sv ? "on" : ""}" data-act="save" aria-pressed="${!!sv}">${sv ? "저장됨" : "저장"}</button>
+      ${sv ? `<select class="status" data-act="status" aria-label="지원 단계">${STATUSES.map(s => `<option ${sv.status === s ? "selected" : ""}>${s}</option>`).join("")}</select>` : ""}
+      <a class="orig" href="${j.url ? esc(j.url) : "#"}" ${j.url ? 'target="_blank" rel="noopener"' : 'data-act="origin"'}>공고 원문 보기</a>
+    </div>
+  </article>`;
+}
+
+function exclTable(list){
+  const shown = showAllExcl ? list : list.slice(0, 15);
+  return `<div class="table"><table>
+    <thead><tr><th>기관 / 공고</th><th>출처</th><th>제외 사유</th></tr></thead>
+    <tbody>${shown.map(e => `<tr>
+      <td><strong>${esc(e.job.org)}</strong> / ${esc(e.job.title)}<span class="sub">${esc(e.regionName)}</span></td>
+      <td>${esc(e.job.source)}</td>
+      <td><ul>${e.reasons.map(r => `<li>${esc(r)}</li>`).join("")}</ul></td>
+    </tr>`).join("")}</tbody></table></div>
+    ${list.length > 15 ? `<button class="more" data-act="moreExcl">${showAllExcl ? "15건만 보기" : `나머지 ${list.length - 15}건 더 보기`}</button>` : ""}`;
+}
+function beforeTable(list){
+  const cls = {"추천":"rec","검토":"cond","제외":"excl"};
+  return `<div class="table"><table>
+    <thead><tr><th>기관 / 공고</th><th>등록일</th><th>기간 안이었다면</th></tr></thead>
+    <tbody>${list.map(e => `<tr>
+      <td><strong>${esc(e.job.org)}</strong> / ${esc(e.job.title)}<span class="sub">${esc(e.job.source)}, ${e.dl ? ymd(e.dl) + " 마감" : "마감일 없음"}</span></td>
+      <td>${e.posted ? ymd(e.posted) : "-"}</td>
+      <td><span class="would ${cls[e.verdict]}">${e.verdict}</span>${e.verdict === "제외" ? `<span class="sub">${esc(e.reasons[0])}</span>` : ""}</td>
+    </tr>`).join("")}</tbody></table></div>`;
+}
+
+let last = null;
+function render(){
+  const start = D(profile.start);
+  const counts = {};
+  JOBS.forEach(j => counts[j.source] = (counts[j.source] || 0) + 1);
+  const pool = JOBS.filter(j => profile.sources.includes(j.source)).map(evaluate);
+  const inPeriod = pool.filter(e => !e.posted || (e.posted >= start && e.posted <= TODAY));
+  const before = pool.filter(e => e.posted && e.posted < start).sort((a, b) => b.posted - a.posted);
+  const byDl = (a, b) => (a.dl || Infinity) - (b.dl || Infinity) || b.score - a.score;
+  const rec = inPeriod.filter(e => e.verdict === "추천").sort(byDl);
+  const cond = inPeriod.filter(e => e.verdict === "검토").sort(byDl);
+  const excl = inPeriod.filter(e => e.verdict === "제외");
+  const showBefore = profile.beforeMode === "ref";
+  last = {rec, cond, excl, before, start};
+
+  $("#todayLabel").textContent = `${md(TODAY)} ${WEEK[TODAY.getDay()]}요일`;
+  $("#feeds").innerHTML = feedsHTML(counts);
+  if (dataMode === "loading"){ $("#report").innerHTML = ""; return; }
+
+  $("#briefTitle").innerHTML = `${md(start)}부터 오늘까지 새로 올라온 공고 <b>${inPeriod.length}</b>건 중 추천 <b>${rec.length}</b>건, 검토 <b>${cond.length}</b>건이에요.`;
+  const dis = profile.discharge ? D(profile.discharge) : null;
+  const left = dis ? days(dis, TODAY) : null;
+  const modeText = { sample:"지금은 연습용 샘플 공고예요.", live:"공공데이터 API에서 받은 실제 공고예요.", fallback:"API에 연결하지 못해 샘플 공고를 보여 주고 있어요." }[dataMode] || "";
+  $("#briefSub").textContent = `${modeText} ` + (left != null && left > 0
+    ? `전역까지 ${left}일 남아서, 마감이 전역일보다 빠른 공고는 '전역예정자 지원 가능' 여부를 공고문에서 확인하세요.`
+    : "");
+
+  $("#jump").innerHTML = `
+    <a class="rec" href="#sec-rec">추천 <b>${rec.length}</b></a>
+    <a href="#sec-cond">검토 <b>${cond.length}</b></a>
+    <a href="#sec-excl">제외 <b>${excl.length}</b></a>
+    ${showBefore ? `<a href="#sec-before">${md(start)} 이전 <b>${before.length}</b></a>` : ""}
+    <button type="button" class="copy" data-act="copy">리포트 텍스트로 복사</button>`;
+
+  const empty = (t, s) => `<div class="empty"><strong>${t}</strong>${s}</div>`;
+  $("#report").innerHTML = `
+    <section class="section" id="sec-rec">
+      <h2>추천 공고 <b>${rec.length}건</b></h2>
+      <p class="desc">경력 분야, 직급, 지역이 모두 맞는 공고예요. 마감이 가까운 순서입니다.</p>
+      <div class="stack">${rec.length ? rec.map(cardHTML).join("") : empty("추천할 공고가 없어요.", "핵심 경력 분야나 이주 가능 지역을 넓혀 보세요.")}</div>
+    </section>
+    <section class="section" id="sec-cond">
+      <h2>검토 공고 <b>${cond.length}건</b></h2>
+      <p class="desc">한두 가지가 아쉽지만 공고문을 보고 판단할 만한 공고예요.</p>
+      <div class="stack">${cond.length ? cond.map(e => cardHTML(e, 99)).join("") : empty("검토할 공고가 없어요.", "")}</div>
+    </section>
+    <section class="section" id="sec-excl">
+      <h2>제외한 공고와 사유 <b>${excl.length}건</b></h2>
+      <p class="desc">조건을 바꾸면 다시 들어올 수 있도록 사유를 남겨 둬요.</p>
+      ${excl.length ? exclTable(excl) : empty("제외한 공고가 없어요.", "")}
+    </section>
+    ${showBefore ? `
+    <section class="section" id="sec-before">
+      <h2>${md(start)} 이전 공고, 참고 <b>${before.length}건</b></h2>
+      <p class="desc">조사 기간 밖이라 추천에 넣지 않았어요.</p>
+      ${before.length ? beforeTable(before) : empty("이전 공고가 없어요.", "")}
+    </section>` : ""}`;
+  $("#sampleNote").style.display = dataMode === "live" ? "none" : "";
+  firstPaint = false;
+}
+
+/* =========================================================
+   6. 텍스트 리포트
+   ========================================================= */
+function cardText(e, n){
+  const j = e.job;
+  return [
+    `${n}. ${j.org} / ${j.title}${j.url ? " (" + j.url + ")" : ""}`,
+    `- 출처 ${j.source}, 근무지 ${e.regionName}${j.hireType ? ", " + j.hireType : ""}${j.salary ? ", 보수 " + j.salary : ""}, 마감 ${e.dl ? ymd(e.dl) : "없음"} (적합도 ${e.score}점)`,
+    `- 추천 이유`,
+    ...e.why.filter(w => w[1]).map(([k, v], i) => `  ${i + 1}) ${k}: ${v}`),
+    ...(e.check ? [`- 확인할 점: ${e.check}`] : []),
+  ].join("\n");
+}
+function buildText(){
+  const {rec, cond, excl, before, start} = last, P = profile;
+  const o = [];
+  o.push("[공공 채용공고 매칭 리포트]");
+  o.push(`조사 기간: ${ymd(start)} ~ ${ymd(TODAY)} (등록일 기준), 출처: ${P.sources.join(", ")}`);
+  o.push(`기본 프로필: 최종 계급 ${P.rank} / 전역 예정일 ${P.discharge ? ymd(D(P.discharge)) : "-"} / 군 경력 ${P.years}년`);
+  o.push(`주요 사업 규모·역할: ${P.project} / 어학: ${P.lang}${P.langScore ? " (" + P.langScore + ")" : ""}`);
+  o.push(`희망 지역: 수도권 우선 / 이주 가능: ${P.movable.join(", ") || "없음"}`);
+  o.push("", `■ 추천 공고 (${rec.length}건)`);
+  rec.forEach((e, i) => o.push(cardText(e, i + 1), ""));
+  if (!rec.length) o.push("해당 없음", "");
+  o.push(`■ 검토 공고 (${cond.length}건)`);
+  cond.forEach((e, i) => o.push(cardText(e, i + 1), ""));
+  if (!cond.length) o.push("해당 없음", "");
+  o.push(`■ 제외한 공고와 사유 (${excl.length}건)`);
+  excl.forEach(e => o.push(`- ${e.job.org} / ${e.job.title}: ${e.reasons.join(", ")}`));
+  if (P.beforeMode === "ref"){
+    o.push("", `■ ${ymd(start)} 이전 공고 (참고, ${before.length}건)`);
+    before.forEach(e => o.push(`- ${e.job.org} / ${e.job.title}: 등록 ${e.posted ? ymd(e.posted) : "-"}, 기간 안이었다면 ${e.verdict}`));
+  } else o.push("", `※ ${ymd(start)} 이전 공고는 포함하지 않음`);
+  if (dataMode !== "live") o.push("", "※ 연습용 샘플 데이터로 만든 리포트입니다.");
+  return o.join("\n");
+}
+async function copyReport(){
+  const text = buildText();
+  try { await navigator.clipboard.writeText(text); toast("리포트를 텍스트로 복사했어요."); }
+  catch(e){
+    const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); toast("리포트를 텍스트로 복사했어요."); } catch(_){ toast("복사하지 못했어요. 브라우저 권한을 확인하세요."); }
+    ta.remove();
+  }
+}
+let toastTimer;
+function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2400); }
+
+/* =========================================================
+   7. 실제 공고 불러오기 (server.js 또는 Vercel 에서 열었을 때만)
+   ========================================================= */
+let loadedFrom = null;
+async function loadLive(){
+  if (!/^https?:$/.test(location.protocol)) return;          // 파일로 열면 샘플 그대로
+  const s = D(profile.start); s.setDate(s.getDate() - 14);    // 이전 공고 참고용으로 2주 더
+  const from = isoDay(s);
+  if (loadedFrom === from) return;
+  loadedFrom = from;
+  dataMode = "loading"; render();
+  try {
+    const r = await fetch(`api/jobs?from=${from}`);
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const d = await r.json();
+    feedStatus = d.sources;
+    if (d.sources.some(x => x.status === "ok")){ JOBS = d.jobs; dataMode = "live"; }
+    else { JOBS = SAMPLE_JOBS; dataMode = "fallback"; }
+  } catch(e){ JOBS = SAMPLE_JOBS; dataMode = "fallback"; feedStatus = null; }
+  render();
+}
+
+/* =========================================================
+   8. 이벤트
+   ========================================================= */
+function persist(){ store.set("dasi3.profile", profile); render(); }
+$("#form").addEventListener("change", e => {
+  const t = e.target;
+  if (t.dataset.key){
+    const k = t.dataset.key;
+    profile[k] = [...document.querySelectorAll(`input[data-key="${k}"]:checked`)].map(i => i.value);
+  } else if (t.name === "beforeMode") profile.beforeMode = t.value;
+  else if (t.id === "years") profile.years = Math.max(0, Number(t.value) || 0);
+  else if (t.id === "start"){ if (!t.value){ t.value = profile.start; return; } profile.start = t.value; persist(); return loadLive(); }
+  else if (t.id) profile[t.id] = t.value;
+  persist();
+});
+["project","langScore"].forEach(id => $("#" + id).addEventListener("input", e => { profile[id] = e.target.value; persist(); }));
+$("#resetBtn").addEventListener("click", () => { profile = structuredClone(DEFAULT_PROFILE); fillForm(); persist(); loadLive(); });
+
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-act]"); if (!el) return;
+  const act = el.dataset.act;
+  if (act === "copy") return copyReport();
+  if (act === "moreExcl"){ showAllExcl = !showAllExcl; return render(); }
+  if (act === "origin"){ e.preventDefault(); return toast("연습용 샘플 공고라 원문이 없어요. 실제 API에 연결하면 원문으로 이동합니다."); }
+  if (act === "save"){
+    const id = el.closest(".card").dataset.id;
+    saved[id] ? delete saved[id] : saved[id] = {status:"관심", savedAt:Date.now()};
+    store.set("dasi3.saved", saved); render();
+  }
+});
+$("#report").addEventListener("change", e => {
+  if (e.target.dataset.act !== "status") return;
+  const id = e.target.closest(".card").dataset.id;
+  saved[id].status = e.target.value; store.set("dasi3.saved", saved);
+  toast(`지원 단계를 '${e.target.value}'(으)로 바꿨어요.`);
+});
+
+if (window.matchMedia("(max-width:900px)").matches) $("#profileBox").open = false;
+fillForm();
+render();
+loadLive();
+</script>
+</body>
+</html>

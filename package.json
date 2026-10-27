@@ -1,0 +1,13 @@
+{
+  "name": "dasi-chulgeun",
+  "version": "0.3.0",
+  "private": true,
+  "description": "군 경력자 재취업용 공공 채용공고 매칭 리포트",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/sources.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
