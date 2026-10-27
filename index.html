@@ -290,7 +290,6 @@ const STATUSES = ["관심","지원 완료","서류 합격","면접","최종 결�
 // 핵심 경력 분야 → 공고에서 찾을 단어
 const FIELD_DICT = {
   "방위력개선사업": ["방위력개선","방위사업","무기체계","전력화","전력사업","획득사업","국방사업","사업관리"],
-  "정보화사업":    ["정보화사업","PMO","PM","SI","구축사업","시스템 구축","사업관리","사업운영","사업 운영","프로젝트"],
   "국방정보화":    ["정보화","전산","정보시스템","정보통신","디지털","ICT","SI","데이터"],
   "정보보안":      ["보안","정보보호","사이버","개인정보","관제"],
   "비상대비·안전": ["비상대비","충무","민방위","재난","안전관리","예비군","위기관리"],
@@ -417,7 +416,8 @@ function migrate(p){
   if (!Array.isArray(p.keywords)) p.keywords = ["",""];
   if (p.salary == null) p.salary = "";
   if (Array.isArray(p.fields) && p.fields.includes("사업관리"))          // 예전 '사업관리' → 두 분야로 나눔
-    p.fields = [...new Set(p.fields.flatMap(f => f === "사업관리" ? ["방위력개선사업","정보화사업"] : [f]))];
+    p.fields = [...new Set(p.fields.flatMap(f => f === "사업관리" ? ["방위력개선사업"] : [f]))];
+  if (Array.isArray(p.fields)) p.fields = p.fields.filter(f => f !== "정보화사업");   // '정보화사업' 분야는 없앰
   return p;
 }
 let profile = Object.assign(structuredClone(DEFAULT_PROFILE), migrate(store.get("dasi4.profile", {})));   // 왼쪽 입력 중인 값
