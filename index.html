@@ -250,7 +250,7 @@ const SOURCES = [
   {name:"나라일터", label:"인사혁신처 공공취업정보"},
   {name:"잡알리오", label:"기재부 공공기관 채용정보"},
   {name:"잡아바", label:"경기도 내 공공일자리"},
-  {name:"경기 민간채용", label:"경기데이터드림 민간 채용정보"},
+  {name:"경기 민간채용", label:"경기도일자리재단 잡아바 채용정보"},
 ];
 const STATUSES = ["관심","지원 완료","서류 합격","면접","최종 결과"];
 
@@ -540,15 +540,17 @@ function exclTable(list){
     </tr>`).join("")}</tbody></table></div>
     ${list.length > 15 ? `<button class="more" data-act="moreExcl">${showAllExcl ? "15건만 보기" : `나머지 ${list.length - 15}건 더 보기`}</button>` : ""}`;
 }
-function beforeTable(list){
+function beforeTable(all){
   const cls = {"추천":"rec","검토":"cond","제외":"excl"};
+  const order = {"추천":0,"검토":1,"제외":2};
+  const list = [...all].sort((a, b) => order[a.verdict] - order[b.verdict]).slice(0, 20);   // 추천·검토 먼저, 20건까지
   return `<div class="table"><table>
     <thead><tr><th>기관 / 공고</th><th>등록일</th><th>기간 안이었다면</th></tr></thead>
     <tbody>${list.map(e => `<tr>
       <td><strong>${esc(e.job.org)}</strong> / ${esc(e.job.title)}<span class="sub">${esc(e.job.source)}, ${e.dl ? ymd(e.dl) + " 마감" : "마감일 없음"}</span></td>
       <td>${e.posted ? ymd(e.posted) : "-"}</td>
       <td><span class="would ${cls[e.verdict]}">${e.verdict}</span>${e.verdict === "제외" ? `<span class="sub">${esc(e.reasons[0])}</span>` : ""}</td>
-    </tr>`).join("")}</tbody></table></div>`;
+    </tr>`).join("")}</tbody></table></div>${all.length > 20 ? `<p class="desc" style="margin-top:8px">추천·검토 순으로 20건만 보여 드려요. 전체 ${all.length}건은 텍스트 리포트에 들어 있어요.</p>` : ""}`;
 }
 
 let last = null;
