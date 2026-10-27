@@ -59,7 +59,11 @@ async function handle(req, res, env = process.env, fetchImpl) {
     return send(res, out.status, out.body);
   } catch (e) {
     const notReady = /relation .*inquiries.* does not exist|Could not find the table/i.test(e.message);
-    return send(res, notReady ? 503 : 500, { error: notReady ? "게시판 테이블이 아직 없어요. supabase/schema.sql 을 실행해 주세요." : "잠시 문제가 생겼어요. 다시 시도해 주세요.", detail: String(e.message).slice(0, 200) });
+    const badKey = e.status === 401 || /Invalid API key/i.test(e.message);
+    const error = notReady ? "게시판 테이블이 아직 없어요. supabase/schema.sql 을 실행해 주세요."
+      : badKey ? "게시판이 아직 준비 중이에요. (관리자: Vercel 의 SUPABASE_SECRET_KEY 값을 확인해 주세요)"
+      : "잠시 문제가 생겼어요. 다시 시도해 주세요.";
+    return send(res, notReady || badKey ? 503 : 500, { error, detail: String(e.message).slice(0, 200) });
   }
 }
 
