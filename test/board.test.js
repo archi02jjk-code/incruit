@@ -40,6 +40,13 @@ const t = async (name, fn) => { await fn(); passed++; console.log("  ✓", name)
     assert.ok(B.checkPassword("1234", h)); assert.ok(!B.checkPassword("12345", h));
   });
 
+  await t("키에 섞여 들어온 줄바꿈·공백은 지운다", async () => {
+    const f = fakeSupabase();
+    await api(f, "GET", null, "/api/board", { ...ENV, SUPABASE_SECRET_KEY: "sb_secret_te\nst  ", SUPABASE_URL: " https://x.supabase.co/ " });
+    assert.equal(f.calls[0].headers.apikey, "sb_secret_test");
+    assert.ok(f.calls[0].url.startsWith("https://x.supabase.co/rest/v1/"));
+  });
+
   await t("Supabase 설정이 없으면 '준비 중'으로 답한다", async () => {
     const r = await api(fakeSupabase(), "GET", null, "/api/board", {});
     assert.equal(r.statusCode, 503); assert.ok(r.body.notConfigured);
