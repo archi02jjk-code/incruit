@@ -887,7 +887,7 @@ function tipsHTML(rec, cond){
   const soon = rec.filter(e => e.dl && days(e.dl, TODAY) <= 7).length;
   const milRec = rec.filter(e => e.why[2][1].includes("군 경력이 강점")).length;
   const stat = rec.length
-    ? `추천 ${rec.length}건 중 ${soon}건은 7일 안에 마감되고, ${milRec}건은 군 관련 기관·직무라 군 경력이 강점이에요.`
+    ? `추천 ${rec.length}건 중 ` + [soon ? `${soon}건은 7일 안에 마감돼요` : "7일 안에 마감되는 공고는 없어요", milRec ? `${milRec}건은 군 관련 기관·직무라 군 경력이 강점이에요` : ""].filter(Boolean).join(". ") + "."
     : "";
   if (!lastTips.length && !stat) return "";
   return `<section class="tips" aria-label="조건을 바꾸면">
