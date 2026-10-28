@@ -6,6 +6,7 @@ const { collectAll } = require("../lib/sources");
 
 const CACHE_MS = 30 * 60 * 1000;   // 30분 동안은 다시 부르지 않는다 (호출 한도 절약)
 let cache = { key: "", at: 0, data: null };
+const lastGood = new Map();          // 출처 이름 → { at, from, src }
 
 const kstToday = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
 const addDays = (s, n) => { const d = new Date(s + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
@@ -20,15 +21,16 @@ function send(res, status, body, cdn = "") {
 }
 
 // 출처 하나라도 실패했으면 5분만 저장해 금방 다시 시도한다
-const cdnHeader = d => (d.sources || []).every(x => x.status === "ok" || x.status === "no-key")
+const cdnHeader = d => (d.sources || []).every(x => (x.status === "ok" && !x.stale) || x.status === "no-key")
   ? "public, max-age=0, s-maxage=1800, stale-while-revalidate=86400"
   : "public, max-age=0, s-maxage=300, stale-while-revalidate=600";
 
 module.exports = async function handler(req, res) {
   const url = new URL(req.url, "http://localhost");
   const to = kstToday();
-  let from = url.searchParams.get("from") || addDays(to, -30);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || from > to) from = addDays(to, -30);
+  // 기본 14일: 나라일터는 기간이 길면 첫 쪽 응답이 20초를 넘겨 실패한다 (2026-10-28 확인, 30일은 실패·7일은 성공)
+  let from = url.searchParams.get("from") || addDays(to, -14);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || from > to) from = addDays(to, -14);
   if (from < addDays(to, -60)) from = addDays(to, -60);   // 너무 먼 과거는 60일로 제한
 
   const key = `${from}~${to}`;
@@ -37,6 +39,17 @@ module.exports = async function handler(req, res) {
   }
   try {
     const data = await collectAll({ env: process.env, from, to });
+    // 한 출처가 잠깐 실패하면, 같은 서버가 기억하는 최근 성공본(24시간 이내)으로 채운다
+    data.sources = data.sources.map(s => {
+      if (s.status === "ok"){ lastGood.set(s.name, { at: Date.now(), from, src: s, jobs: data.jobs.filter(j => j.source === s.name) }); return s; }
+      const g = lastGood.get(s.name);
+      if (s.status === "error" && g && g.from <= from && Date.now() - g.at < 864e5){
+        data.jobs = data.jobs.concat(g.jobs);
+        const t = new Date(g.at + 9 * 3600e3).toISOString().slice(11, 16);
+        return { ...g.src, stale: true, message: `지금 응답이 늦어 ${t}에 받은 공고를 보여 줘요` };
+      }
+      return s;
+    });
     cache = { key, at: Date.now(), data };
     send(res, 200, data, cdnHeader(data));
   } catch (e) {

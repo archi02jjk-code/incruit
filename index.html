@@ -1111,7 +1111,7 @@ let loadedFrom = null;
 async function loadLive(){
   if (!/^https?:$/.test(location.protocol)) return;          // 파일로 열면 샘플 그대로
   const s = D((applied || profile).start); s.setDate(s.getDate() - 7);     // 이전 공고 참고용으로 1주 더
-  const win = new Date(TODAY); win.setDate(win.getDate() - 30);      // 기본 30일 창은 모두가 같은 주소라 서버 캐시를 함께 쓴다
+  const win = new Date(TODAY); win.setDate(win.getDate() - 14);      // 기본 14일 창은 모두가 같은 주소라 서버 캐시를 함께 쓴다
   const from = s < win ? isoDay(s) : "";
   if (loadedFrom === from) return;
   loadedFrom = from;
