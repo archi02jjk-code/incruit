@@ -10,28 +10,35 @@ let cache = { key: "", at: 0, data: null };
 const kstToday = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
 const addDays = (s, n) => { const d = new Date(s + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
 
-function send(res, status, body) {
+// Vercel CDN 캐시: 30분 동안은 저장본을 바로 주고, 그 뒤 하루까지는 저장본을 먼저 준 다음 뒤에서 새로 받아 둔다.
+// 그래서 공고 수집(30초 이상)을 기다리는 사람은 배포 직후 첫 방문자 정도뿐이다.
+function send(res, status, body, cdn = "") {
   res.statusCode = status;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Cache-Control", cdn || "no-store");
   res.end(JSON.stringify(body));
 }
+
+// 출처 하나라도 실패했으면 5분만 저장해 금방 다시 시도한다
+const cdnHeader = d => (d.sources || []).every(x => x.status === "ok" || x.status === "no-key")
+  ? "public, max-age=0, s-maxage=1800, stale-while-revalidate=86400"
+  : "public, max-age=0, s-maxage=300, stale-while-revalidate=600";
 
 module.exports = async function handler(req, res) {
   const url = new URL(req.url, "http://localhost");
   const to = kstToday();
-  let from = url.searchParams.get("from") || addDays(to, -14);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || from > to) from = addDays(to, -14);
+  let from = url.searchParams.get("from") || addDays(to, -30);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || from > to) from = addDays(to, -30);
   if (from < addDays(to, -60)) from = addDays(to, -60);   // 너무 먼 과거는 60일로 제한
 
   const key = `${from}~${to}`;
   if (cache.data && cache.key === key && Date.now() - cache.at < CACHE_MS && url.searchParams.get("refresh") !== "1") {
-    return send(res, 200, { ...cache.data, cached: true });
+    return send(res, 200, { ...cache.data, cached: true }, cdnHeader(cache.data));
   }
   try {
     const data = await collectAll({ env: process.env, from, to });
     cache = { key, at: Date.now(), data };
-    send(res, 200, data);
+    send(res, 200, data, cdnHeader(data));
   } catch (e) {
     send(res, 500, { error: String(e.message || e) });
   }

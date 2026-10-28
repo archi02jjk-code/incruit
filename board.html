@@ -283,7 +283,7 @@ function showLocked(id){
 /* ---------- 주소(#)로 화면 고르기 ---------- */
 function route(){
   if (!/^https?:$/.test(location.protocol))
-    return notice("게시판은 서버에서 열어야 해요.", "이 폴더에서 node server.js 를 실행하고 http://localhost:3000/board.html 로 열어 주세요.");
+    return notice("게시판은 사이트 주소에서 열어 주세요.", "https://incruit-zeta.vercel.app/board.html 로 접속하면 글을 보고 쓸 수 있어요.");
   const h = location.hash;
   if (h === "#write") return showWrite();
   const m = h.match(/^#post-(\d+)$/);

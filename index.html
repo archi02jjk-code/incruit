@@ -130,6 +130,18 @@
   .reset{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:.85rem;padding:0}
 
   .section{margin-bottom:34px;scroll-margin-top:16px}
+  /* 조건을 바꾸면 */
+  .tips{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--hot);border-radius:var(--radius-m);padding:16px 18px;margin-bottom:28px}
+  .tips h2{font-size:1.02rem;margin:0 0 4px}
+  .tips .desc{margin:0 0 10px}
+  .tips ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+  .tips li{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;justify-content:space-between;padding:9px 12px;background:var(--soft);border-radius:10px}
+  .tips li span b{color:var(--hot)}
+  .tips button{border:1.5px solid var(--hot);background:#fff;color:var(--hot);font-weight:700;border-radius:999px;padding:5px 12px;cursor:pointer;font-size:.88rem}
+  .tips button:hover{background:var(--hot);color:#fff}
+  .tips .stat{margin:10px 0 0;font-size:.88rem;color:var(--muted)}
+  .jump .ics{border:1px solid var(--seal);background:var(--surface);color:var(--seal);border-radius:999px;padding:6px 14px;font-weight:600;font-size:.93rem;cursor:pointer}
+  @media print{.tips,.jump .ics{display:none}}
   .section > h2{font-size:1.2rem;margin:0 0 4px;letter-spacing:-0.03em;display:flex;align-items:baseline;gap:8px}
   .section > h2 b{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:600;font-size:1rem}
   .section > .desc{margin:0 0 14px;color:var(--muted);font-size:.9rem}
@@ -302,7 +314,7 @@
       <li>60점 이상 <strong>추천</strong>, 40~59점 <strong>검토</strong>, 그 아래나 마감된 공고는 <strong>제외</strong>합니다. 조사 기간은 최초 등록일로 판단합니다.</li>
     </ul>
     <p>공공 API는 공고명·기관·기간·지역 정도만 주기 때문에, 자격 요건과 연봉은 공고 원문에서 꼭 확인하세요.</p>
-    <p id="sampleNote"><span class="flag">샘플 데이터</span> 파일을 바로 열면 연습용 가상 공고가 보입니다. <code>node server.js</code>로 실행하고 API 키를 넣으면 실제 공고로 바뀝니다.</p>
+    <p id="sampleNote"><span class="flag">샘플 데이터</span> 지금은 연습용 가상 공고를 보여 주고 있어요. 채용공고 서버에 연결되면 실제 공고로 자동으로 바뀝니다.</p>
   </section>
 </main>
 
@@ -816,6 +828,111 @@ function progAfterRender(rec, cond){
   r.hideTimer = setTimeout(() => { if (!run) $("#progress").hidden = true; }, 4000);
 }
 
+/* ---- 조건을 바꾸면: 조건 하나만 바꿨을 때 추천·검토가 몇 건 늘어나는지 미리 계산한다 ---- */
+function countWith(over){
+  const keep = applied;
+  applied = { ...keep, ...over };
+  try {
+    const start = D(applied.start);
+    let rec = 0, cond = 0;
+    for (const j of JOBS){
+      if (!applied.sources.includes(j.source)) continue;
+      const e = evaluate(j);
+      if (e.posted && (e.posted < start || e.posted > TODAY)) continue;
+      if (e.verdict === "추천") rec++; else if (e.verdict === "검토") cond++;
+    }
+    return { rec, cond };
+  } finally { applied = keep; }
+}
+function whatIf(base){
+  const P = applied, tips = [];
+  const add = (label, over, apply) => {
+    const r = countWith(over);
+    const dRec = r.rec - base.rec, dAll = (r.rec + r.cond) - (base.rec + base.cond);
+    if (dRec > 0 || dAll > 0) tips.push({ label, dRec, dAll, apply });
+  };
+  const sal = String(P.salary || "0");
+  const si = SALARY_OPTIONS.findIndex(x => x[0] === sal);
+  if (si > 0){
+    const lower = SALARY_OPTIONS[si - 1];
+    add(`희망 연봉을 '${lower[1]}'(으)로 낮추면`, { salary: lower[0] }, { salary: lower[0] });
+  }
+  if (P.regions.length < REGIONS.length){
+    const others = REGIONS.filter(r => !P.regions.includes(r));
+    // 지역을 하나씩 더해 보고 가장 많이 늘어나는 곳을 고른다
+    let best = null;
+    for (const r of others){
+      const c = countWith({ regions: [...P.regions, r] });
+      const g = (c.rec + c.cond) - (base.rec + base.cond);
+      if (g > 0 && (!best || g > best.g)) best = { r, g };
+    }
+    if (best) add(`희망 지역에 '${best.r}'을(를) 더하면`, { regions: [...P.regions, best.r] }, { regions: [...P.regions, best.r] });
+  }
+  const must = (P.keywords || []).filter(k => String(k || "").trim());
+  if (must.length) add(`'반드시 포함' 단어(${must.join(", ")})를 비우면`, { keywords: ["", ""] }, { keywords: ["", ""] });
+  let bestF = null;
+  for (const f of Object.keys(FIELD_DICT)){
+    if (P.fields.includes(f)) continue;
+    const c = countWith({ fields: [...P.fields, f] });
+    const g = (c.rec - base.rec) * 10 + ((c.rec + c.cond) - (base.rec + base.cond));
+    if (g > 0 && (!bestF || g > bestF.g)) bestF = { f, g };
+  }
+  if (bestF) add(`핵심 역량에 '${bestF.f}'을(를) 더하면`, { fields: [...P.fields, bestF.f] }, { fields: [...P.fields, bestF.f] });
+  return tips.sort((a, b) => b.dRec - a.dRec || b.dAll - a.dAll).slice(0, 4);
+}
+let lastTips = [], tipsKey = "";
+function tipsHTML(rec, cond){
+  const key = JSON.stringify(applied) + "|" + JOBS.length + "|" + dataMode + "|" + JOBS.filter(j => j.contentState === "ok").length;
+  if (key !== tipsKey){ tipsKey = key; lastTips = whatIf({ rec: rec.length, cond: cond.length }); }
+  const soon = rec.filter(e => e.dl && days(e.dl, TODAY) <= 7).length;
+  const milRec = rec.filter(e => e.why[2][1].includes("군 경력이 강점")).length;
+  const stat = rec.length
+    ? `추천 ${rec.length}건 중 ${soon}건은 7일 안에 마감되고, ${milRec}건은 군 관련 기관·직무라 군 경력이 강점이에요.`
+    : "";
+  if (!lastTips.length && !stat) return "";
+  return `<section class="tips" aria-label="조건을 바꾸면">
+    <h2>조건을 하나만 바꾸면 이렇게 달라져요</h2>
+    <p class="desc">지금 받은 공고로 미리 계산했어요. 버튼을 누르면 그 조건으로 다시 골라 드려요.</p>
+    ${lastTips.length ? `<ul>${lastTips.map((t, i) => `<li><span>${esc(t.label)} 추천 <b>${t.dRec >= 0 ? "+" : ""}${t.dRec}</b>건, 추천·검토 합계 <b>+${t.dAll}</b>건</span><button type="button" data-act="tip" data-i="${i}">이 조건으로 보기</button></li>`).join("")}</ul>`
+      : `<p class="desc" style="margin:0">조건 하나를 바꿔도 더 늘어나는 공고가 없어요. 지금 조건이 받은 공고에 잘 맞춰져 있어요.</p>`}
+    ${stat ? `<p class="stat">${stat}</p>` : ""}
+  </section>`;
+}
+
+/* ---- 마감일을 내 캘린더로 (.ics) ---- */
+function downloadIcs(){
+  if (!last) return;
+  const ids = new Set();
+  const list = [...last.rec, ...last.cond.filter(e => saved[e.job.id])].filter(e => e.dl && !ids.has(e.job.id) && ids.add(e.job.id));
+  if (!list.length) return toast("마감일이 적힌 추천·저장 공고가 없어요.");
+  const d8 = dt => isoDay(dt).replace(/-/g, "");
+  const esc2 = t => String(t || "").replace(/\\/g, "\\\\").replace(/[;,]/g, m => "\\" + m).replace(/\n/g, "\\n");
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//dasi-chulgeun//KO", "CALSCALE:GREGORIAN", "X-WR-CALNAME:다시출근 채용 마감"];
+  for (const e of list){
+    const end = new Date(e.dl); end.setDate(end.getDate() + 1);
+    lines.push("BEGIN:VEVENT", `UID:${String(e.job.id).replace(/[^\w.-]/g, "")}@dasi-chulgeun`, `DTSTAMP:${stamp}`,
+      `DTSTART;VALUE=DATE:${d8(e.dl)}`, `DTEND;VALUE=DATE:${d8(end)}`,
+      `SUMMARY:${esc2(`[마감] ${e.job.org} ${e.job.title}`)}`,
+      `DESCRIPTION:${esc2(`${e.verdict} ${e.score}점\n` + e.why.filter(w => w[1]).map(w => `${w[0]}: ${w[1]}`).join("\n") + (e.job.url ? `\n${e.job.url}` : ""))}`,
+      e.job.url ? `URL:${e.job.url}` : "",
+      "BEGIN:VALARM", "TRIGGER:-P2D", "ACTION:DISPLAY", `DESCRIPTION:${esc2("채용 마감 2일 전")}`, "END:VALARM", "END:VEVENT");
+  }
+  lines.push("END:VCALENDAR");
+  const enc = new TextEncoder();
+  const fold = line => {                 // 캘린더 파일 규칙: 한 줄 75바이트를 넘으면 다음 줄로 접는다
+    let out = "", cur = "", n = 0;
+    for (const ch of line){ const b = enc.encode(ch).length; if (n + b > 73){ out += cur + "\r\n "; cur = ""; n = 1; } cur += ch; n += b; }
+    return out + cur;
+  };
+  const blob = new Blob([lines.filter(Boolean).map(fold).join("\r\n")], { type: "text/calendar;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = `채용마감_${isoDay(TODAY)}.ics`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  toast(`마감일 ${list.length}건을 캘린더 파일로 받았어요. 파일을 열면 휴대폰·구글 캘린더에 들어가요.`);
+}
+
 let last = null;
 function markDirty(){
   if (run && run.pct < 100) return;    // 진행 중에는 버튼 글자를 진행률로 둔다
@@ -877,10 +994,12 @@ function render(){
     <a href="#sec-cond">검토 <b>${cond.length}</b></a>
     <a href="#sec-excl">제외 <b>${excl.length}</b></a>
     ${showBefore ? `<a href="#sec-before">${md(start)} 이전 <b>${before.length}</b></a>` : ""}
+    <button type="button" class="ics" data-act="ics" title="추천 공고와 저장한 공고의 마감일을 캘린더 파일로 받아요">마감일 캘린더에 넣기</button>
     <button type="button" class="copy" data-act="copy">리포트 텍스트로 복사</button>`;
 
   const empty = (t, s) => `<div class="empty"><strong>${t}</strong>${s}</div>`;
   $("#report").innerHTML = `
+    ${contentRun ? "" : tipsHTML(rec, cond)}
     <section class="section" id="sec-rec">
       <h2>추천 공고 <b>${rec.length}건</b></h2>
       <p class="desc">경력 분야, 직급, 지역이 모두 맞는 공고예요. 마감이 가까운 순서입니다.</p>
@@ -992,12 +1111,13 @@ let loadedFrom = null;
 async function loadLive(){
   if (!/^https?:$/.test(location.protocol)) return;          // 파일로 열면 샘플 그대로
   const s = D((applied || profile).start); s.setDate(s.getDate() - 7);     // 이전 공고 참고용으로 1주 더
-  const from = isoDay(s);
+  const win = new Date(TODAY); win.setDate(win.getDate() - 30);      // 기본 30일 창은 모두가 같은 주소라 서버 캐시를 함께 쓴다
+  const from = s < win ? isoDay(s) : "";
   if (loadedFrom === from) return;
   loadedFrom = from;
   dataMode = "loading"; progFetching(); render();
   try {
-    const r = await fetch(`api/jobs?from=${from}`);
+    const r = await fetch(from ? `api/jobs?from=${from}` : "api/jobs");
     if (!r.ok) throw new Error("HTTP " + r.status);
     const d = await r.json();
     feedStatus = d.sources;
@@ -1057,6 +1177,13 @@ document.addEventListener("click", e => {
   const el = e.target.closest("[data-act]"); if (!el) return;
   const act = el.dataset.act;
   if (act === "copy") return copyReport();
+  if (act === "ics") return downloadIcs();
+  if (act === "tip"){
+    const t = lastTips[+el.dataset.i]; if (!t) return;
+    Object.assign(profile, structuredClone(t.apply));
+    store.set("dasi4.profile", profile); fillForm();
+    return $("#form").requestSubmit();
+  }
   if (act === "moreExcl"){ showAllExcl = !showAllExcl; return render(); }
   if (act === "origin"){ e.preventDefault(); return toast("연습용 샘플 공고라 원문이 없어요. 실제 API에 연결하면 원문으로 이동합니다."); }
   if (act === "save"){
